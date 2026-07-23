@@ -1,0 +1,8 @@
+.DS_Store
+.home/
+.tools/
+node_modules/
+Memory Graph/
+memory-graph/
+*.log
+*.tmp
