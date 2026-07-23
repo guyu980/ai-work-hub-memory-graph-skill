@@ -1,4 +1,4 @@
 interface:
   display_name: "AI Work Hub Memory Graph"
   short_description: "Cross-project investment memory graph"
-  default_prompt: "Use $ai-work-hub-memory-graph to connect this project or news item to prior projects, sector views, technical themes, valuation anchors, and the running investment thesis."
+  default_prompt: "Use $ai-work-hub-memory-graph to connect this project or news item to prior projects, key people, sector views, technical themes, valuation anchors, and the running investment thesis."

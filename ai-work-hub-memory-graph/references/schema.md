@@ -9,6 +9,7 @@ Use date-prefixed files when the card is first created:
 ```text
 01_项目卡片/YYYY-MM-DD_项目名.md
 06_事件卡片/YYYY-MM-DD_事件短名.md
+08_人物卡片/YYYY-MM-DD_姓名.md
 ```
 
 Use stable sector and theme files:
@@ -68,6 +69,49 @@ One line per project. Update the latest line by replacing it when practical; app
 
 ```json
 {"type":"project","name":"Project Name","aliases":[],"primary_sector":"AI原生应用与工作流","tags":["AI应用"],"status":"active","judgment":"继续推进","stage":"","valuation":"","source_path":"01_项目卡片/YYYY-MM-DD_Project Name.md","related_projects":[],"counterexamples":[],"updated_at":"YYYY-MM-DD","summary":"One-sentence compressed view."}
+```
+
+## Person Card Markdown
+
+Create person cards only for high-signal people with reusable industry, academic, technical, or operator standing: notable founders, professors, scientists, lab leads, repeat founders, major maintainers, or technical/product leaders whose independent public work materially changes project judgment. Do not create person cards for ordinary project founders or team members whose importance is limited to one deal. Do not store private contact details or sensitive personal information.
+
+```markdown
+# 人物卡片｜姓名或待核验称呼
+
+- 创建日期:
+- 最近更新:
+- 当前机构/角色:
+- 相关项目:
+- 相关赛道:
+- 标签:
+- 信息口径: public / project-material / transcript / interview-note / pending-verification
+- 当前判断:
+
+## 一句话
+
+## 身份消歧
+
+## 学术与技术背景
+
+## 论文 / 专利 / GitHub / 开源
+
+## 创业与产业履历
+
+## 跨项目关系
+
+## 对投资判断的启发
+
+## 风险与待确认
+
+## 来源
+```
+
+## Person Index JSONL
+
+One line per high-signal person who meets the industry-standing threshold. Use `identity_status` to avoid overstating uncertain identities. Avoid pending person-index entries unless the role itself is clearly industry-significant; otherwise keep pending identity checks inside the project card.
+
+```json
+{"type":"person","name":"Person Name","aliases":[],"identity_status":"verified / pending / partial","roles":["founder","chief scientist"],"current_org":"","related_projects":["Project Name"],"primary_sectors":["具身智能与机器人"],"tags":["world model","professor"],"source_path":"08_人物卡片/YYYY-MM-DD_Person Name.md","source_tier":"public / project-material / transcript / interview-note / pending-verification","updated_at":"YYYY-MM-DD","summary":"Why this person matters for investment judgment."}
 ```
 
 ## Event Card Markdown

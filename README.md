@@ -10,6 +10,7 @@ It connects new BPs, Feishu notes, datapacks, news items, GitHub projects, techn
 
 - Initializes a local private `Memory Graph/` knowledge base inside an AI Work Hub workspace.
 - Creates and updates project cards, event cards, sector maps, technical themes, valuation anchors, and thesis entries.
+- Tracks only high-signal people with reusable industry, academic, technical, or operator standing, without becoming a CRM or team roster.
 - Retrieves similar projects, counterexamples, valuation anchors, and sector or technical views before a new project judgment.
 - Post-processes AI technology daily/weekly reports and GitHub radar outputs into high-signal event cards.
 - Keeps the public skill reusable while keeping private investment knowledge local.
@@ -74,6 +75,12 @@ Post-process a daily or weekly report:
 Use $ai-work-hub-memory-graph to extract high-signal event cards from this AI科技与宏观事件日报.
 ```
 
+Track a high-signal founder, scientist, or technical leader:
+
+```text
+Use $ai-work-hub-memory-graph to add this founder/scientist as a key-person signal only if they have reusable industry standing beyond this one project.
+```
+
 ## Updating The Skill
 
 This repo should be the public source of truth for the skill only.
@@ -95,7 +102,7 @@ git pull
 
 ## Do Not Commit
 
-Do not commit generated local knowledge bases, project materials, Feishu auth state, tokens, private deal notes, company confidential data, or user-specific local overrides.
+Do not commit generated local knowledge bases, project materials, Feishu auth state, tokens, private deal notes, company confidential data, private contact details, sensitive personal information, or user-specific local overrides.
 
 ## License
 

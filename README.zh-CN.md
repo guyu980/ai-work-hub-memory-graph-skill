@@ -10,6 +10,7 @@
 
 - 在 AI Work Hub 工作区里初始化本地私有 `Memory Graph/` 知识库。
 - 创建和更新项目卡片、事件卡片、赛道地图、技术主题、估值锚点和观点账本。
+- 只跟踪具备可复用行业地位、学术/技术谱系或操盘记录的高信号人物，不做成通讯录、CRM 或项目团队花名册。
 - 看新项目之前，检索相似项目、反例项目、估值锚点、赛道观点和技术主题。
 - 将 AI科技与宏观事件日报/周报、GitHub 全球项目雷达里的高信号事件沉淀为事件卡片。
 - 保持 skill 本身公开可复用，但知识库内容只保存在本地，不上传 GitHub。
@@ -74,6 +75,12 @@ Use $ai-work-hub-memory-graph to initialize my Memory Graph under ~/Documents/AI
 Use $ai-work-hub-memory-graph to extract high-signal event cards from this AI科技与宏观事件日报.
 ```
 
+沉淀高信号创始人、科学家或技术负责人：
+
+```text
+Use $ai-work-hub-memory-graph to add this founder/scientist as a key-person signal only if they have reusable industry standing beyond this one project.
+```
+
 ## 分类方式
 
 初始化脚本会创建一套默认赛道分类，方便开箱即用；这只是默认模板，不是固定规则。用户可以直接修改 `Memory Graph/02_赛道地图/` 下的赛道文件，并让项目索引里的 `primary_sector` 跟随自己的分类方式。
@@ -99,7 +106,7 @@ git pull
 
 ## 不要提交这些内容
 
-不要提交生成出来的本地知识库、项目资料、飞书登录态、token、私有交易笔记、公司保密信息或用户个人本地配置。
+不要提交生成出来的本地知识库、项目资料、飞书登录态、token、私有交易笔记、公司保密信息、私人联系方式、敏感个人信息或用户个人本地配置。
 
 ## License
 

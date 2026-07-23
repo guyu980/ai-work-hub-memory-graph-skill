@@ -47,6 +47,7 @@ Memory Graph/
   05_观点账本/
   06_事件卡片/
   07_周度沉淀/
+  08_人物卡片/
   templates/
 ```
 
@@ -64,6 +65,27 @@ When classifying a new item:
 - If no existing category fits, create a new sector file or ask the user whether to add one.
 - Keep classification useful for future comparison, not taxonomic perfection.
 
+## People Layer
+
+Use the people layer only for high-signal people with reusable industry, academic, technical, or operator standing. It is not a CRM, address book, contact database, or team roster.
+
+Create or update people entries when a person materially affects investment judgment or cross-project recall, such as:
+
+- founder, co-founder, CEO, or operator with clear public industry standing, prior company-building record, or repeated relevance across projects;
+- professor, principal investigator, lab lead, scientist, or technical advisor whose research standing or technical lineage is central to the project;
+- chief scientist, technical/product leader, open-source maintainer, or core research/engineering owner only when the person has independently meaningful public work, patents, papers, widely adopted repos, products, or prior operating outcomes;
+- person whose academic/technical lineage, IP boundary, employment overlap, or prior startup history changes the risk view.
+
+Do not create people entries for ordinary project founders, GTM leads, product managers, engineering leads, meeting attendees, sales contacts, customer interviewees, supplier contacts, junior employees, or investors unless the person is independently important beyond that one project. A named person in a BP is not enough. If the person matters only to one project's execution risk, keep the analysis inside that project card. Do not store private contact details, personal phone numbers, personal emails, addresses, ID numbers, or sensitive personal information. Keep the source tier explicit: public source, project material, Feishu transcript, interview note, or needs verification.
+
+Default people workflow:
+
+1. Keep team analysis inside the project card first, especially under `团队技术背景`.
+2. Add or update `00_索引/人物索引.jsonl` only for people who meet the higher industry-standing threshold.
+3. Create a Markdown person card under `08_人物卡片/` only when the person is likely to be reused as a future comparable, technical-lineage signal, or risk signal beyond one project.
+4. Link people cards back to project cards, sector maps, technical themes, event cards, and thesis entries only when the connection changes judgment.
+5. If identity is incomplete, do not create a pending person entry unless the role itself is clearly industry-significant. For ordinary unverified team members, leave the note in the project card.
+
 ## Project Intake Workflow
 
 Use this workflow before and after `ai-work-hub-diligence` or any project review.
@@ -71,22 +93,24 @@ Use this workflow before and after `ai-work-hub-diligence` or any project review
 Before judging a new project:
 
 1. Extract the project name, sector, technical route, business model, customer type, stage, valuation, founder/team entities, and source date from the material.
-2. Search `Memory Graph/00_索引/` and relevant `02_赛道地图/`, `03_技术主题/`, and `04_估值锚点/` files.
+2. Search `Memory Graph/00_索引/` and relevant `02_赛道地图/`, `03_技术主题/`, `04_估值锚点/`, and `08_人物卡片/` files.
 3. Identify similar projects, useful counterexamples, valuation anchors, related technical themes, and active thesis entries.
 4. Add a concise `Memory Graph 联想` section to the answer or running project memo:
    - 最相似的已看项目
    - 最有参考价值的反例
    - 相关赛道/技术观点
    - 可比估值锚点
+   - 关键人物/团队 lineage
    - 这个项目必须证明的差异点
 
 After the project view is formed or updated:
 
 1. Create or update one project card in `01_项目卡片/`.
 2. Append or update one line in `00_索引/项目索引.jsonl`.
-3. Update sector maps, technical theme files, valuation anchors, or thesis entries only when the new evidence changes reusable knowledge.
-4. Keep passed or archived projects in the Memory Graph if they are useful future comparables or counterexamples.
-5. Skip very low-quality projects that add no reusable learning; record a generic thesis note instead only if it sharpens a pattern.
+3. Add or update key people in `00_索引/人物索引.jsonl` only when they meet the higher industry-standing threshold; create person cards in `08_人物卡片/` only for people whose public standing, technical lineage, or operator record is reusable across future diligence.
+4. Update sector maps, technical theme files, valuation anchors, or thesis entries only when the new evidence changes reusable knowledge.
+5. Keep passed or archived projects in the Memory Graph if they are useful future comparables or counterexamples.
+6. Skip very low-quality projects that add no reusable learning; record a generic thesis note instead only if it sharpens a pattern.
 
 Use the user's source material and local aliases to determine canonical project names. Do not introduce alternate names unless a source requires alias tracking.
 
@@ -98,7 +122,8 @@ After the `AI科技与宏观事件日报/周报` workflow generates and archives
 2. Extract only high-signal events that may affect investment judgment, valuation anchors, sector direction, technical direction, or watchlist priorities.
 3. Create event cards in `06_事件卡片/` for those events.
 4. Append one JSONL line per event to `00_索引/事件索引.jsonl`.
-5. Update relevant sector maps, technical themes, valuation anchors, or thesis entries only when there is real incremental learning.
+5. If a report introduces a founder, scientist, professor, open-source maintainer, or technical/product leader with clear industry standing, update the people index or person card. Do this only when the person is likely to matter for future project comparison; ordinary financing founders stay in the report archive and project/event card.
+6. Update relevant sector maps, technical themes, valuation anchors, or thesis entries only when there is real incremental learning.
 
 Do not save the full daily/weekly report inside Memory Graph. Do not convert every news item into an event card. Low-signal news should remain only in the daily/weekly archive.
 
@@ -108,7 +133,8 @@ For GitHub global project radar outputs, use the same post-processing pattern:
 
 1. Treat each truly high-value repo as an event card, project card, or technical-theme update depending on what it teaches.
 2. Separate heat from durable technical signal.
-3. Prefer updating technical themes and sector maps over creating many thin project cards.
+3. When reliable, capture only industry-significant maintainers, founders, scientists, or lab leads as people-index entries; if uncertain, write `不明确` in the radar report rather than creating a pending people entry from names, language, or weak affiliation.
+4. Prefer updating technical themes and sector maps over creating many thin project cards.
 
 ## Output Style
 
@@ -118,6 +144,7 @@ When answering the user, make Memory Graph output decision-useful:
 - Distinguish confirmed facts, company/source claims, and current interpretation.
 - Keep cross-project linkage short enough to be read inside a diligence answer.
 - State when a new input changes the sector map or thesis ledger.
+- State when a new input adds or changes a key-person signal.
 - Avoid generic industry summaries that do not change a judgment.
 
 ## Quality Checks
@@ -130,3 +157,4 @@ Before finishing:
 4. Confirm indexes use JSONL with one valid JSON object per line.
 5. Confirm low-value projects are not over-preserved.
 6. Confirm daily/weekly post-processing extracted only high-signal events.
+7. Confirm people cards contain no private contact information and distinguish verified facts from source claims and pending identity checks.
