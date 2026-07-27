@@ -261,6 +261,12 @@ One line per high-signal person who meets the industry-standing threshold. Use `
 
 ## 一级市场可比
 
+### 已成交 / 已融到钱的估值
+
+### 已签署 / 交割中
+
+### 在融报价 / 下一轮目标
+
 ## 商业模式分层
 
 ### SaaS / ARR
@@ -277,6 +283,39 @@ One line per high-signal person who meets the industry-standing threshold. Use `
 
 ## 最近更新
 ```
+
+Valuation observations must preserve transaction status and source tier.
+Completed/funded valuations are market facts and should normally be retained
+even when the project is expensive, paused, or passed. Signed prices, current
+quotes, and next-round targets remain useful at lower weight, but must not be
+mixed with completed transactions.
+
+For each observation, include the project, date, round, pre/post-money basis,
+amount raised when known, source, operating stage, relevant metric denominator,
+and unusual rights or control/strategic premiums when they affect
+comparability. Keep the internal fair-value range under
+`我们自己的价格纪律`; never present it as a transaction.
+
+## Graph Delta
+
+Use the following reusable-change envelope:
+
+```json
+{
+  "schema_version": 2,
+  "project": "<项目名>",
+  "relations_add": [],
+  "valuation_proposals": [],
+  "thesis_proposals": [],
+  "sector_proposals": [],
+  "event_triggers": []
+}
+```
+
+Use `valuation_proposals` when a valuation observation is decision-useful but
+its destination, transaction status, source conflict, or comparability requires
+review. When the anchor destination and evidence label are clear, update the
+valuation anchor directly and rebuild the indexes.
 
 ## Thesis Ledger Markdown
 

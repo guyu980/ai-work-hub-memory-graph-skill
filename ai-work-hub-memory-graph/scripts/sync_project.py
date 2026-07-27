@@ -43,7 +43,12 @@ def queue_delta(
     timestamp: str,
 ) -> Path | None:
     proposals = []
-    for kind in ("thesis_proposals", "sector_proposals", "event_triggers"):
+    for kind in (
+        "valuation_proposals",
+        "thesis_proposals",
+        "sector_proposals",
+        "event_triggers",
+    ):
         for proposal in delta.get(kind, []):
             proposals.append(
                 {

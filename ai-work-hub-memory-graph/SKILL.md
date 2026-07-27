@@ -111,11 +111,12 @@ After the project view is formed or updated:
 
 1. Create or update the project folder's state JSON and claim-level evidence ledger according to the companion diligence skill's evidence contract.
 2. Create or update one project card in `01_项目卡片/`.
-3. Run `scripts/sync_project.py` or `scripts/rebuild_indexes.py`; never hand-append generated index records.
-4. Add or update key people only when they meet the higher industry-standing threshold.
-5. Put thesis, sector, and external-event changes in `09_待确认更新/` unless the user explicitly confirms the reusable view change.
-6. Keep passed or archived projects when they are useful comparables or counterexamples.
-7. Skip very low-quality projects that add no reusable learning.
+3. If the source includes a completed financing valuation, signed/in-closing price, current quote, next-round target, secondary transaction, or acquisition price, apply `Valuation Capture` below before finishing. Do not leave reusable price evidence only in the project card.
+4. Run `scripts/sync_project.py` or `scripts/rebuild_indexes.py`; never hand-append generated index records.
+5. Add or update key people only when they meet the higher industry-standing threshold.
+6. Put thesis, sector, valuation, and external-event proposals in `09_待确认更新/` when the reusable change is ambiguous or no safe anchor destination is clear. Apply factual valuation observations directly when their destination and source tier are clear.
+7. Keep passed or archived projects when they are useful comparables or counterexamples.
+8. Skip very low-quality projects that add no reusable learning.
 
 Use the user's source material and local aliases to determine canonical project names. Do not introduce alternate names unless a source requires alias tracking.
 
@@ -124,6 +125,40 @@ contracts. Retrieve them normally, retain their immutable
 `historical_outcome`, and let current decision fields change if follow-up
 reopens the project. Historical passes are often valuable counterexamples; do
 not delete them merely because they are archived.
+
+## Valuation Capture
+
+Treat market price evidence and investment judgment as separate layers. A valuation can be a useful market anchor even when the project is overpriced, paused, passed, or outside the fund's strategy.
+
+Classify every financing or transaction price before deciding how to store it:
+
+1. **Completed / funded / closed**: money has been invested or the transaction has closed. Add it to the relevant `04_估值锚点/` file by default when the project is a meaningful comparable. A public filing or announcement is strongest, but a private deal document that explicitly states `已交割` is still usable when labeled `材料已成交口径`.
+2. **Signed / in closing**: a binding agreement, lead commitment, or signed term sheet exists but closing is incomplete. Keep it separate from completed rounds and state the remaining condition.
+3. **In-market quote**: the company, founder, FA, or current round materials quote a pre-money or post-money valuation. Preserve it as a lower-weight market signal with source and date; never relabel it as completed.
+4. **Next-round target / aspiration**: record only as a low-confidence financing expectation or sentiment signal.
+5. **Our fair-value view**: state the comfortable range, price judgment, and required milestones separately. Never overwrite a market transaction with the internal fair value or use a transaction price as automatic proof of fairness.
+
+For each reusable observation, capture as many of these fields as the source supports:
+
+- project, date, round, transaction status;
+- pre-money/post-money valuation, amount raised, currency;
+- source tier and source reference;
+- operating stage and the latest revenue/ARR/gross profit/profit/order metrics available at that time;
+- implied multiples when decision-useful;
+- unusual rights, strategic consideration, control premium, secondary component, or other terms that impair comparability.
+
+Do not omit a completed valuation merely because operating data is incomplete. Store the price fact, mark the missing denominator, and avoid calculating unsupported multiples. When sources conflict, preserve the competing observations with their source tiers rather than silently choosing one.
+
+Before finishing any project round, explicitly check:
+
+```text
+Valuation capture
+- Completed/funded valuation found:
+- Signed/in-closing price found:
+- Current quote or next-round target found:
+- Relevant valuation anchor updated or proposal queued:
+- Market price and our fair-value view kept separate:
+```
 
 ## Daily And Weekly Report Post-Processing
 
@@ -134,7 +169,8 @@ After the `AI科技与宏观事件日报/周报` workflow generates and archives
 3. Create event cards in `06_事件卡片/` for those events.
 4. Append one JSONL line per event to `00_索引/事件索引.jsonl`.
 5. If a report introduces a founder, scientist, professor, open-source maintainer, or technical/product leader with clear industry standing, update the people index or person card. Do this only when the person is likely to matter for future project comparison; ordinary financing founders stay in the report archive and project/event card.
-6. Update relevant sector maps, technical themes, valuation anchors, or thesis entries only when there is real incremental learning.
+6. Capture completed financing valuations for meaningful comparables even when they do not change the investment thesis. Keep quotes and next-round targets as lower-weight observations.
+7. Update relevant sector maps, technical themes, valuation anchors, or thesis entries only when there is real incremental learning.
 
 Public news may add an `event_trigger` proposal, but it must not automatically
 change a project's investment decision. Mark such triggers `needs_review`.
@@ -175,3 +211,5 @@ Before finishing:
 8. Rebuild all JSONL indexes and run `scripts/validate_memory_graph.py`.
 9. Confirm structured decision, play, sizing, and price fields are separate.
 10. Confirm unresolved relation targets are typed `external_entity`, not silently treated as projects.
+11. Confirm completed/funded valuations for meaningful comparables were added to the relevant valuation anchor or explicitly queued, even when the recommendation is `pause` or `pass`.
+12. Confirm signed prices, current quotes, next-round targets, and internal fair-value ranges are labeled separately from completed transactions.
