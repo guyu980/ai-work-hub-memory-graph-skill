@@ -1,6 +1,13 @@
-# Memory Graph Schema
+# Memory Graph Schema v2
 
-Use Markdown for human-readable knowledge and JSONL for fast retrieval. Keep the Markdown file as the source of nuanced judgment; keep JSONL compact and machine-friendly.
+Use four explicit layers:
+
+1. `项目/<项目名>/` is the complete source-of-truth layer.
+2. `<项目名>_项目状态.json` is the machine-readable current project state.
+3. Memory Graph Markdown cards are compressed human-readable views.
+4. JSONL indexes are generated caches. Rebuild them from cards and state; do not hand-maintain them.
+
+Cross-project thesis, sector, or event-triggered changes are proposals until reviewed. Store them in `09_待确认更新/`. Store sync and rebuild audit records in `10_运行记录/`.
 
 ## Naming
 
@@ -26,13 +33,34 @@ Use stable sector and theme files:
 ```markdown
 # 项目卡片｜项目名
 
+- Schema Version: 2
+- 项目 ID: project:项目名
 - 创建日期:
 - 最近更新:
+- 最近同步:
 - 主赛道:
 - 标签:
-- 当前状态: active / archived / watch / passed / invested
-- 当前投资判断: 投 / 继续推进 / 暂缓 / 不投 / 小额 option / 已投 / 观察
+- 别名: []
+- 资料模式: live / historical_review
+- 历史结果: not_applicable / invested / pass / unknown
+- 复盘状态: not_applicable / pending / in_progress / reviewed / refresh_due
+- 历史决策日期:
+- 复盘基准日:
+- 项目状态: active / archived
+- 流程阶段: screening / diligence / ic / closing / monitoring / archived
+- 投资判断: invest / continue / pause / pass / observe / invested
+- 建议打法: lead / co_lead / follow / small_option / none / tbd
+- 仓位: standard / small / symbolic / tbd
+- 价格判断: cheap / reasonable / expensive / unacceptable / unknown
+- 判断置信度: low / medium / high
+- 当前投资判断: 人类可读组合结论
+- 融资阶段:
+- 估值摘要:
+- 状态文件:
+- 证据账本:
 - 资料来源:
+- 同步哈希:
+- 证据回填状态: complete / pending / partial
 
 ## 一句话
 
@@ -63,13 +91,46 @@ Use stable sector and theme files:
 ## 下次触发更新的信号
 ```
 
+## Project State JSON
+
+The state JSON lives inside the project folder and owns all current decision
+fields. See the companion diligence skill's
+`references/evidence-contract.md` for the complete schema.
+
+Do not encode project lifecycle, diligence stage, decision, role, sizing, and
+price in one status string.
+
+Historical projects use the same schema. Keep `historical_outcome` immutable as
+the original result while current decision fields may change when the project
+is reopened.
+
 ## Project Index JSONL
 
-One line per project. Update the latest line by replacing it when practical; appending a superseding line is acceptable if the older line remains useful history.
+One generated line per project:
 
 ```json
-{"type":"project","name":"Project Name","aliases":[],"primary_sector":"AI原生应用与工作流","tags":["AI应用"],"status":"active","judgment":"继续推进","stage":"","valuation":"","source_path":"01_项目卡片/YYYY-MM-DD_Project Name.md","related_projects":[],"counterexamples":[],"updated_at":"YYYY-MM-DD","summary":"One-sentence compressed view."}
+{"schema_version":2,"type":"project","project_id":"project:Project Name","name":"Project Name","aliases":[],"primary_sector":"AI原生应用与工作流","tags":["AI应用"],"project_status":"active","process_stage":"diligence","investment_decision":"continue","recommended_play":"follow","position_size":"small","price_view":"reasonable","confidence":"medium","judgment_display":"继续推进；建议跟投，小仓位","stage":"","valuation":"","source_path":"01_项目卡片/YYYY-MM-DD_Project Name.md","state_path":"项目/Project Name/输出文档/Project Name_项目状态.json","evidence_ledger_path":"项目/Project Name/解析文本/证据账本.jsonl","related_projects":[],"counterexamples":[],"updated_at":"YYYY-MM-DD","summary":"One-sentence compressed view."}
 ```
+
+## Relationship Index JSONL
+
+`00_索引/关系索引.jsonl` is generated. Every target has an explicit kind.
+Unresolved public comparables remain `external_entity`; do not pretend they are
+local project cards.
+
+```json
+{"schema_version":2,"type":"relationship","relation_id":"relation:...","from_kind":"project","from_id":"project:A","from_name":"A","relation_type":"comparable_to","to_kind":"project","to_id":"project:B","to_name":"B","source_path":"01_项目卡片/...","updated_at":"YYYY-MM-DD"}
+```
+
+Allowed relation types:
+
+- `comparable_to`
+- `counterexample_of`
+- `supports_thesis`
+- `contradicts_thesis`
+- `linked_person`
+- `affected_by`
+- `uses_valuation_anchor`
 
 ## Person Card Markdown
 
@@ -234,6 +295,23 @@ One line per high-signal person who meets the industry-standing threshold. Use `
 - 什么信号会推翻:
 - 最近更新:
 ```
+
+The first empty template block is not valid data. Index only thesis sections
+whose `观点` value is non-empty.
+
+## Operational Commands
+
+```bash
+python3 scripts/migrate_memory_graph_v2.py --workspace-root "<workspace_root>"
+python3 scripts/rebuild_indexes.py --workspace-root "<workspace_root>"
+python3 scripts/validate_memory_graph.py --workspace-root "<workspace_root>"
+python3 scripts/build_context_pack.py --workspace-root "<workspace_root>" --query "<project or topic>"
+python3 scripts/sync_project.py --workspace-root "<workspace_root>" --state "<state.json>" --graph-delta "<optional-delta.json>"
+```
+
+Run rebuild and validation after any batch mutation. `sync_project.py` may update
+the project card automatically, but thesis and sector proposals stay in the
+review queue.
 
 ## Sector Values
 
