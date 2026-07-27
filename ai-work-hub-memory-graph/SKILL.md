@@ -1,6 +1,6 @@
 ---
 name: ai-work-hub-memory-graph
-description: Use when the user wants AI Work Hub to connect a new project, BP, Feishu note, transcript, datapack, news item, financing event, GitHub project, technical topic, sector question, or valuation question to prior projects, sector maps, technical themes, valuation anchors, and a running investment thesis. Also use to initialize or maintain the local private Memory Graph knowledge base, create project/event cards, update sector or technical views, or run post-processing after the AI科技与宏观事件日报/周报 or ai-work-hub-diligence workflows.
+description: Use when the user wants AI Work Hub to connect a live or historical invested/pass project, BP, Feishu note, transcript, datapack, news item, financing event, GitHub project, technical topic, sector question, or valuation question to prior projects, sector maps, technical themes, valuation anchors, and a running investment thesis. Also use to initialize, migrate, retrieve from, synchronize, validate, or maintain the local private Memory Graph; create project/event cards; update sector or technical views; or run post-processing after the AI科技与宏观事件日报/周报 or ai-work-hub-diligence workflows.
 ---
 
 # AI Work Hub Memory Graph
@@ -36,6 +36,7 @@ Memory Graph/
   README.md
   00_索引/
     项目索引.jsonl
+    关系索引.jsonl
     事件索引.jsonl
     人物索引.jsonl
     观点索引.jsonl
@@ -48,6 +49,9 @@ Memory Graph/
   06_事件卡片/
   07_周度沉淀/
   08_人物卡片/
+  09_待确认更新/
+  10_运行记录/
+  config/
   templates/
 ```
 
@@ -93,7 +97,7 @@ Use this workflow before and after `ai-work-hub-diligence` or any project review
 Before judging a new project:
 
 1. Extract the project name, sector, technical route, business model, customer type, stage, valuation, founder/team entities, and source date from the material.
-2. Search `Memory Graph/00_索引/` and relevant `02_赛道地图/`, `03_技术主题/`, `04_估值锚点/`, and `08_人物卡片/` files.
+2. Build a bounded context pack with `scripts/build_context_pack.py`, then read the returned source cards and relevant `02_赛道地图/`, `03_技术主题/`, `04_估值锚点/`, and `08_人物卡片/` files. Retrieval is a shortlist, not evidence.
 3. Identify similar projects, useful counterexamples, valuation anchors, related technical themes, and active thesis entries.
 4. Add a concise `Memory Graph 联想` section to the answer or running project memo:
    - 最相似的已看项目
@@ -105,14 +109,21 @@ Before judging a new project:
 
 After the project view is formed or updated:
 
-1. Create or update one project card in `01_项目卡片/`.
-2. Append or update one line in `00_索引/项目索引.jsonl`.
-3. Add or update key people in `00_索引/人物索引.jsonl` only when they meet the higher industry-standing threshold; create person cards in `08_人物卡片/` only for people whose public standing, technical lineage, or operator record is reusable across future diligence.
-4. Update sector maps, technical theme files, valuation anchors, or thesis entries only when the new evidence changes reusable knowledge.
-5. Keep passed or archived projects in the Memory Graph if they are useful future comparables or counterexamples.
-6. Skip very low-quality projects that add no reusable learning; record a generic thesis note instead only if it sharpens a pattern.
+1. Create or update the project folder's state JSON and claim-level evidence ledger according to the companion diligence skill's evidence contract.
+2. Create or update one project card in `01_项目卡片/`.
+3. Run `scripts/sync_project.py` or `scripts/rebuild_indexes.py`; never hand-append generated index records.
+4. Add or update key people only when they meet the higher industry-standing threshold.
+5. Put thesis, sector, and external-event changes in `09_待确认更新/` unless the user explicitly confirms the reusable view change.
+6. Keep passed or archived projects when they are useful comparables or counterexamples.
+7. Skip very low-quality projects that add no reusable learning.
 
 Use the user's source material and local aliases to determine canonical project names. Do not introduce alternate names unless a source requires alias tracking.
+
+Historical invested/pass reviews use the same project-card and relation
+contracts. Retrieve them normally, retain their immutable
+`historical_outcome`, and let current decision fields change if follow-up
+reopens the project. Historical passes are often valuable counterexamples; do
+not delete them merely because they are archived.
 
 ## Daily And Weekly Report Post-Processing
 
@@ -124,6 +135,9 @@ After the `AI科技与宏观事件日报/周报` workflow generates and archives
 4. Append one JSONL line per event to `00_索引/事件索引.jsonl`.
 5. If a report introduces a founder, scientist, professor, open-source maintainer, or technical/product leader with clear industry standing, update the people index or person card. Do this only when the person is likely to matter for future project comparison; ordinary financing founders stay in the report archive and project/event card.
 6. Update relevant sector maps, technical themes, valuation anchors, or thesis entries only when there is real incremental learning.
+
+Public news may add an `event_trigger` proposal, but it must not automatically
+change a project's investment decision. Mark such triggers `needs_review`.
 
 Do not save the full daily/weekly report inside Memory Graph. Do not convert every news item into an event card. Low-signal news should remain only in the daily/weekly archive.
 
@@ -158,3 +172,6 @@ Before finishing:
 5. Confirm low-value projects are not over-preserved.
 6. Confirm daily/weekly post-processing extracted only high-signal events.
 7. Confirm people cards contain no private contact information and distinguish verified facts from source claims and pending identity checks.
+8. Rebuild all JSONL indexes and run `scripts/validate_memory_graph.py`.
+9. Confirm structured decision, play, sizing, and price fields are separate.
+10. Confirm unresolved relation targets are typed `external_entity`, not silently treated as projects.
