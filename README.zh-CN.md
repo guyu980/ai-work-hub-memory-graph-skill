@@ -2,18 +2,38 @@
 
 [English](README.md)
 
-这是一个用于维护本地私有“投资认知库”的 Codex skill。
+这是一个用于维护私有“投资认知库”的 Codex skill，可以使用本地文件，也可以通过 Adapter 部署为获授权的飞书 Context Registry。
 
 它把新 BP、飞书纪要、datapack、新闻、GitHub 项目、技术主题和估值问题，连接到过去看过的项目、赛道地图、技术观点、估值锚点和持续更新的观点账本。
 
 ## 它能做什么
 
-- 在 AI Work Hub 工作区里初始化本地私有 `Memory Graph/` 知识库。
+- 在 AI Work Hub 工作区里初始化本地私有 `Memory Graph/`，或把同一套语义记录映射到飞书 Context Registry。
 - 创建和更新项目卡片、事件卡片、赛道地图、技术主题、估值锚点和观点账本。
 - 只跟踪具备可复用行业地位、学术/技术谱系或操盘记录的高信号人物，不做成通讯录、CRM 或项目团队花名册。
 - 看新项目之前，检索相似项目、反例项目、估值锚点、赛道观点和技术主题。
 - 将 AI科技与宏观事件日报/周报、GitHub 全球项目雷达里的高信号事件沉淀为事件卡片。
-- 保持 skill 本身公开可复用，但知识库内容只保存在本地，不上传 GitHub。
+- 保持 skill 本身公开可复用，但知识库内容只保存在本地或获授权的组织环境，不上传 GitHub。
+- 导出 `context-package/v1`，供飞书或其他组织 Adapter 幂等写入。
+
+## 存储方式
+
+- **Local：** Markdown 卡片与可重建 JSONL 索引。
+- **Feishu：** Context Registry 记录与 Drive / Doc 对象材料。
+- **Hybrid：** 指定唯一 Canonical Write Target 和同步状态。
+
+节点、关系和来源 Schema 保持一致，只有 Locator、权限、查询和回写方式不同。详见
+[`context-storage-contract.md`](ai-work-hub-memory-graph/references/context-storage-contract.md)。
+
+导出本地 Graph：
+
+```bash
+python3 ai-work-hub-memory-graph/scripts/export_context_registry.py \
+  --workspace-root "$HOME/Documents/AI Work Hub" \
+  --output /tmp/context-registry-package.json
+python3 ai-work-hub-memory-graph/scripts/validate_context_package.py \
+  /tmp/context-registry-package.json
+```
 
 ## 安装说明
 

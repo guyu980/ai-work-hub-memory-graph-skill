@@ -2,18 +2,39 @@
 
 [中文说明](README.zh-CN.md)
 
-A Codex skill for maintaining a private cross-project investment knowledge base.
+A Codex skill for maintaining a private cross-project investment knowledge base in local files or an authorized Feishu/Lark Context Registry.
 
 It connects new BPs, Feishu notes, datapacks, news items, GitHub projects, technical themes, and valuation questions to prior project cards, sector maps, technical views, valuation anchors, and a running thesis ledger.
 
 ## What It Does
 
-- Initializes a local private `Memory Graph/` knowledge base inside an AI Work Hub workspace.
+- Initializes a local private `Memory Graph/` knowledge base or maps the same semantic records into an authorized Context Registry.
 - Creates and updates project cards, event cards, sector maps, technical themes, valuation anchors, and thesis entries.
 - Tracks only high-signal people with reusable industry, academic, technical, or operator standing, without becoming a CRM or team roster.
 - Retrieves similar projects, counterexamples, valuation anchors, and sector or technical views before a new project judgment.
 - Post-processes AI technology daily/weekly reports and GitHub radar outputs into high-signal event cards.
-- Keeps the public skill reusable while keeping private investment knowledge local.
+- Keeps the public skill reusable while keeping private investment knowledge in the user's local workspace or authorized organization environment.
+- Exports a portable `context-package/v1` Registry delta for adapter-based upsert.
+
+## Storage Profiles
+
+- **Local:** Markdown cards plus rebuildable JSONL indexes.
+- **Feishu/Lark:** Context Registry records plus Drive/Docs object artifacts.
+- **Hybrid:** one declared canonical write target and explicit sync state.
+
+The node and relation schema stays the same. Only locators, permissions,
+queries, and writeback differ. See
+[`context-storage-contract.md`](ai-work-hub-memory-graph/references/context-storage-contract.md).
+
+Export a local graph for an organization adapter:
+
+```bash
+python3 ai-work-hub-memory-graph/scripts/export_context_registry.py \
+  --workspace-root "$HOME/Documents/AI Work Hub" \
+  --output /tmp/context-registry-package.json
+python3 ai-work-hub-memory-graph/scripts/validate_context_package.py \
+  /tmp/context-registry-package.json
+```
 
 ## Quick Install
 

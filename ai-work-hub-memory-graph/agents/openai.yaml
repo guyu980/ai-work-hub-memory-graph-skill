@@ -1,4 +1,4 @@
 interface:
   display_name: "AI Work Hub Memory Graph"
-  short_description: "Validated cross-project investment memory"
-  default_prompt: "Use $ai-work-hub-memory-graph to connect this input to prior projects, capture completed valuations and lower-confidence quotes separately from fair value, update private graph artifacts, rebuild indexes, and validate the Memory Graph."
+  short_description: "Portable cross-project investment memory"
+  default_prompt: "Use $ai-work-hub-memory-graph to connect this input to prior projects in the active local or Feishu storage profile, update private graph artifacts or Context Registry records, preserve source tiers, and validate any cross-runtime Context Package."

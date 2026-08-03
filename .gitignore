@@ -6,3 +6,5 @@ Memory Graph/
 memory-graph/
 *.log
 *.tmp
+__pycache__/
+*.py[cod]
