@@ -65,10 +65,17 @@ def check_locator(value: Any, label: str, errors: list[str]) -> None:
     uri = str(value.get("uri") or "").strip()
     if not uri:
         errors.append(f"{label}.uri is required")
-    elif value.get("backend") == "local" and (
-        Path(uri).is_absolute() or PureWindowsPath(uri).is_absolute()
-    ):
-        errors.append(f"{label}.uri must be workspace-relative for local locators")
+    elif value.get("backend") == "local":
+        parts = Path(uri.replace("\\", "/")).parts
+        if (
+            Path(uri).is_absolute()
+            or PureWindowsPath(uri).is_absolute()
+            or uri.startswith(("~/", "~\\"))
+            or ".." in parts
+        ):
+            errors.append(
+                f"{label}.uri must be workspace-relative for local locators"
+            )
 
 
 def check_context_record(
@@ -120,6 +127,10 @@ def check_context_record(
     if not isinstance(source_refs, list):
         errors.append(f"{label}.source_refs must be an array")
     else:
+        if not source_refs:
+            errors.append(
+                f"{label}.source_refs must contain at least one locator"
+            )
         for index, locator_value in enumerate(source_refs):
             check_locator(
                 locator_value,
@@ -208,6 +219,8 @@ def main() -> int:
     if not isinstance(source_refs, list):
         errors.append("source_refs must be an array")
     else:
+        if not source_refs:
+            errors.append("source_refs must contain at least one locator")
         for index, value in enumerate(source_refs):
             check_locator(value, f"source_refs[{index}]", errors)
 
