@@ -44,7 +44,7 @@
       },
       "additionalProperties": true
     },
-    "source_refs": {"type": "array", "items": {"$ref": "#/$defs/locator"}},
+    "source_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/locator"}},
     "artifacts": {"type": "array", "items": {"$ref": "#/$defs/artifact"}},
     "current_state": {"type": "object"},
     "workflow_outputs": {
@@ -85,7 +85,16 @@
           },
           "then": {
             "properties": {
-              "uri": {"not": {"pattern": "^(?:/|[A-Za-z]:[\\\\/])"}}
+              "uri": {
+                "not": {
+                  "anyOf": [
+                    {"pattern": "^/"},
+                    {"pattern": "^~[\\\\/]"},
+                    {"pattern": "^[A-Za-z]:[\\\\/]"},
+                    {"pattern": "(^|[\\\\/])\\.\\.([\\\\/]|$)"}
+                  ]
+                }
+              }
             }
           }
         }
@@ -126,7 +135,7 @@
         "primary_sector": {"type": "string"},
         "tags": {"type": "array", "items": {"type": "string"}},
         "relations": {"type": "array", "items": {"$ref": "#/$defs/contextRelation"}},
-        "source_refs": {"type": "array", "items": {"$ref": "#/$defs/locator"}},
+        "source_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/locator"}},
         "object_root": {"$ref": "#/$defs/locator"},
         "current_artifact": {"$ref": "#/$defs/locator"},
         "status": {"type": "string", "minLength": 1},
