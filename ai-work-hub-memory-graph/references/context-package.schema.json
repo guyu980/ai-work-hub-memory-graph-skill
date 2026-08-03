@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/guyu980/ai-work-hub-memory-graph-skill/main/ai-work-hub-memory-graph/references/context-package.schema.json",
+  "title": "Context Package v1",
+  "type": "object",
+  "required": ["schema_version", "package_id", "package_type", "created_at", "created_by", "visibility", "object", "trigger", "source_refs"],
+  "properties": {
+    "schema_version": {"const": "context-package/v1"},
+    "package_id": {"type": "string", "minLength": 1},
+    "package_type": {"enum": ["new_context", "state_update", "workflow_output", "resource_update", "strategy_input", "graph_delta", "outcome"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "created_by": {
+      "type": "object",
+      "required": ["actor_type", "actor_id"],
+      "properties": {
+        "actor_type": {"enum": ["human", "agent", "automation"]},
+        "actor_id": {"type": "string", "minLength": 1},
+        "runtime": {"type": "string"},
+        "runtime_version": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "visibility": {"enum": ["organization", "organization_core", "project_team", "restricted"]},
+    "object": {
+      "type": "object",
+      "required": ["object_id", "object_type", "title"],
+      "properties": {
+        "object_id": {"type": "string", "minLength": 1},
+        "object_type": {"enum": ["project", "event", "report", "thesis", "person", "decision_snapshot", "capital_resource", "human_capital", "workflow"]},
+        "title": {"type": "string", "minLength": 1},
+        "aliases": {"type": "array", "items": {"type": "string"}},
+        "status": {"type": "string"},
+        "object_root": {"$ref": "#/$defs/locator"}
+      },
+      "additionalProperties": true
+    },
+    "trigger": {
+      "type": "object",
+      "required": ["trigger_type", "summary"],
+      "properties": {
+        "trigger_type": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "occurred_at": {"type": "string", "format": "date-time"}
+      },
+      "additionalProperties": true
+    },
+    "source_refs": {"type": "array", "items": {"$ref": "#/$defs/locator"}},
+    "artifacts": {"type": "array", "items": {"$ref": "#/$defs/artifact"}},
+    "current_state": {"type": "object"},
+    "workflow_outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["workflow_id", "workflow_version", "summary"],
+        "properties": {
+          "workflow_id": {"type": "string", "minLength": 1},
+          "workflow_version": {"type": "string", "minLength": 1},
+          "summary": {"type": "string", "minLength": 1},
+          "artifact_refs": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": true
+      }
+    },
+    "graph_delta": {"$ref": "#/$defs/contextRegistryDelta"},
+    "proposed_actions": {"type": "array", "items": {"type": "object"}},
+    "writeback": {"type": "object"}
+  },
+  "$defs": {
+    "locator": {
+      "type": "object",
+      "required": ["backend", "kind", "uri"],
+      "properties": {
+        "backend": {"enum": ["local", "feishu", "web", "other"]},
+        "kind": {"enum": ["file", "folder", "document", "base_record", "url"]},
+        "uri": {"type": "string", "minLength": 1},
+        "display_path": {"type": "string"},
+        "content_hash": {"type": "string"},
+        "last_verified_at": {"type": "string", "format": "date-time"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"backend": {"const": "local"}},
+            "required": ["backend"]
+          },
+          "then": {
+            "properties": {
+              "uri": {"not": {"pattern": "^(?:/|[A-Za-z]:[\\\\/])"}}
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["artifact_id", "collection", "title", "locator"],
+      "properties": {
+        "artifact_id": {"type": "string", "minLength": 1},
+        "collection": {"enum": ["sources", "structured_context", "workflow_outputs", "actions_outcomes", "governance"]},
+        "title": {"type": "string", "minLength": 1},
+        "media_type": {"type": "string"},
+        "locator": {"$ref": "#/$defs/locator"},
+        "source_locator": {"$ref": "#/$defs/locator"}
+      },
+      "additionalProperties": true
+    },
+    "contextRelation": {
+      "type": "object",
+      "required": ["relation_type", "target"],
+      "properties": {
+        "relation_type": {"enum": ["comparable_to", "counterexample_of", "supports_thesis", "contradicts_thesis", "linked_person", "affected_by", "uses_valuation_anchor"]},
+        "target": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    },
+    "contextRecord": {
+      "type": "object",
+      "required": ["schema_version", "context_id", "context_type", "title", "summary", "primary_sector", "tags", "relations", "source_refs", "object_root", "current_artifact", "status", "visibility", "version"],
+      "properties": {
+        "schema_version": {"const": "context-record/v1"},
+        "context_id": {"type": "string", "minLength": 1},
+        "context_type": {"enum": ["project", "event", "report", "thesis", "person", "decision_snapshot", "resource", "workflow_output"]},
+        "title": {"type": "string", "minLength": 1},
+        "summary": {"type": "string"},
+        "primary_sector": {"type": "string"},
+        "tags": {"type": "array", "items": {"type": "string"}},
+        "relations": {"type": "array", "items": {"$ref": "#/$defs/contextRelation"}},
+        "source_refs": {"type": "array", "items": {"$ref": "#/$defs/locator"}},
+        "object_root": {"$ref": "#/$defs/locator"},
+        "current_artifact": {"$ref": "#/$defs/locator"},
+        "status": {"type": "string", "minLength": 1},
+        "visibility": {"enum": ["organization", "organization_core", "project_team", "restricted"]},
+        "version": {"type": "string", "minLength": 1},
+        "last_verified_at": {
+          "type": "string",
+          "anyOf": [
+            {"format": "date"},
+            {"format": "date-time"}
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "contextRegistryDelta": {
+      "type": "object",
+      "required": ["schema_version", "records"],
+      "properties": {
+        "schema_version": {"const": "context-registry-delta/v1"},
+        "records": {"type": "array", "items": {"$ref": "#/$defs/contextRecord"}}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

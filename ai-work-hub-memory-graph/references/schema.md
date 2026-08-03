@@ -1,5 +1,10 @@
 # Memory Graph Schema v2
 
+Read `context-storage-contract.md` for local, Feishu/Lark, and hybrid storage.
+The schema below describes the local adapter. A Feishu Context Registry uses
+the same semantic records and relations, while physical locators and query
+mechanics differ.
+
 Use four explicit layers:
 
 1. `项目/<项目名>/` is the complete source-of-truth layer.
@@ -8,6 +13,37 @@ Use four explicit layers:
 4. JSONL indexes are generated caches. Rebuild them from cards and state; do not hand-maintain them.
 
 Cross-project thesis, sector, or event-triggered changes are proposals until reviewed. Store them in `09_待确认更新/`. Store sync and rebuild audit records in `10_运行记录/`.
+
+## Portable Context Record
+
+For organization or cross-runtime deployment, map local cards and indexes to a
+portable record:
+
+```json
+{
+  "schema_version": "context-record/v1",
+  "context_id": "project:Example",
+  "context_type": "project",
+  "title": "Example",
+  "summary": "Current compressed view",
+  "primary_sector": "AI原生应用与工作流",
+  "tags": ["AI应用"],
+  "relations": [],
+  "source_refs": [],
+  "object_root": {"backend":"local","kind":"folder","uri":"项目/Example"},
+  "current_artifact": {"backend":"local","kind":"file","uri":"Memory Graph/01_项目卡片/2026-08-03_Example.md"},
+  "status": "current",
+  "visibility": "restricted",
+  "version": "2",
+  "last_verified_at": "2026-08-03T12:00:00+08:00"
+}
+```
+
+Supported `context_type` values are `project`, `event`, `report`, `thesis`,
+`person`, `decision_snapshot`, `resource`, and `workflow_output`. Valuation
+anchors use `resource` so market evidence is not conflated with a thesis. The
+Context Registry is a retrieval index; full evidence and source files remain
+in the canonical object.
 
 ## Naming
 

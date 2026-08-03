@@ -1,15 +1,21 @@
 ---
 name: ai-work-hub-memory-graph
-description: Use when the user wants AI Work Hub to connect a live or historical invested/pass project, BP, Feishu note, transcript, datapack, news item, financing event, GitHub project, technical topic, sector question, or valuation question to prior projects, sector maps, technical themes, valuation anchors, and a running investment thesis. Also use to initialize, migrate, retrieve from, synchronize, validate, or maintain the local private Memory Graph; create project/event cards; update sector or technical views; or run post-processing after the AI科技与宏观事件日报/周报 or ai-work-hub-diligence workflows.
+description: Use when the user wants AI Work Hub to connect a live or historical invested/pass project, BP, Feishu note, transcript, datapack, news item, financing event, GitHub project, technical topic, sector question, or valuation question to prior projects, sector maps, technical themes, valuation anchors, and a running investment thesis. Also use to initialize, migrate, retrieve from, synchronize, validate, or maintain a local private Memory Graph or an authorized Feishu/Lark Context Registry; create project/event cards; update sector or technical views; produce or consume portable Context Packages; or run post-processing after the AI科技与宏观事件日报/周报 or ai-work-hub-diligence workflows.
 ---
 
 # AI Work Hub Memory Graph
 
 ## Core Contract
 
-Treat the Memory Graph as the cross-project investment knowledge layer for AI Work Hub. It is not a replacement for project folders or daily/weekly reports. It stores compressed, structured knowledge so new projects, news, technology directions, and valuations can be compared against prior work.
+Treat the Memory Graph as the cross-project investment knowledge layer for AI Work Hub. It is not a replacement for canonical project objects or daily/weekly reports. It stores compressed, structured knowledge so new projects, news, technology directions, and valuations can be compared against prior work.
 
-Keep the skill public and reusable, but keep the generated knowledge base local and private. Do not commit project cards, event cards, sector views, valuation anchors, deal notes, Feishu exports, or any private investment judgment to a public repo.
+Keep the skill public and reusable, but keep generated knowledge private or inside an authorized organization environment. Do not commit project cards, event cards, sector views, valuation anchors, deal notes, Feishu exports, or any private investment judgment to a public repo.
+
+Before writing, resolve the storage profile. Read
+`references/context-storage-contract.md` for local, Feishu/Lark, hybrid, or
+cross-runtime work. The node schema, relation semantics, provenance, and
+retrieval output stay the same across backends. Only the adapter changes
+locators, permissions, query mechanics, and writeback.
 
 Default private knowledge base path:
 
@@ -19,7 +25,15 @@ Default private knowledge base path:
 
 If the workspace root is unclear, ask one short question before writing. If the user explicitly requests chat-only work, do not create or update files.
 
-## Initialize
+For Feishu mode, use an authorized Context Registry for searchable records and
+Drive/Docs object roots for full artifacts. Do not hardcode tenant-specific
+Base IDs, field IDs, folder tokens, or permission groups in this public skill.
+Resolve them from the deployment manifest.
+
+For hybrid mode, declare one canonical write target and a synchronization
+status. Never let local and organization copies silently diverge.
+
+## Initialize Local Profile
 
 When the user asks to create or prepare the Memory Graph, run:
 
@@ -56,6 +70,35 @@ Memory Graph/
 ```
 
 Read `references/schema.md` before creating or updating cards, indexes, sector views, valuation anchors, or thesis entries.
+
+## Initialize Feishu Profile
+
+Do not reproduce the local JSONL filesystem literally inside Feishu. Preserve
+the same logical record schema through an adapter:
+
+- Context Registry: project, event, report, thesis, decision-snapshot,
+  resource, and workflow-output records.
+- Object folders: full sources, structured context, workflow outputs, actions
+  and outcomes, and governance artifacts.
+- Base views: retrieval, review queue, permissions, and current status.
+- Deployment manifest: stable-key to live object-ID mapping.
+
+The Context Registry is an index, not a second copy of every document. Claim-
+level evidence stays inside the relevant project or event object.
+
+To move a local graph into a Feishu or other organization adapter, export a
+portable delta:
+
+```bash
+python3 <skill_dir>/scripts/export_context_registry.py \
+  --workspace-root "<workspace_root>" \
+  --output "<output_context_package.json>"
+python3 <skill_dir>/scripts/validate_context_package.py \
+  "<output_context_package.json>"
+```
+
+The adapter must upsert by `context_id`; it must not create duplicate records
+on every export.
 
 ## Taxonomy
 
@@ -94,10 +137,15 @@ Default people workflow:
 
 Use this workflow before and after `ai-work-hub-diligence` or any project review.
 
+If the input is a `context-package/v1`, validate it against
+`references/context-package.schema.json` before retrieval or writeback. Resolve
+the canonical object by object ID and aliases; a new package from another
+runtime does not imply a new project.
+
 Before judging a new project:
 
 1. Extract the project name, sector, technical route, business model, customer type, stage, valuation, founder/team entities, and source date from the material.
-2. Build a bounded context pack with `scripts/build_context_pack.py`, then read the returned source cards and relevant `02_赛道地图/`, `03_技术主题/`, `04_估值锚点/`, and `08_人物卡片/` files. Retrieval is a shortlist, not evidence.
+2. Build a bounded context pack. In local mode use `scripts/build_context_pack.py`; in Feishu mode query the Context Registry and fetch the selected source artifacts through the adapter. Retrieval is a shortlist, not evidence.
 3. Identify similar projects, useful counterexamples, valuation anchors, related technical themes, and active thesis entries.
 4. Add a concise `Memory Graph 联想` section to the answer or running project memo:
    - 最相似的已看项目
@@ -109,14 +157,17 @@ Before judging a new project:
 
 After the project view is formed or updated:
 
-1. Create or update the project folder's state JSON and claim-level evidence ledger according to the companion diligence skill's evidence contract.
-2. Create or update one project card in `01_项目卡片/`.
+1. Create or update the canonical project object's state and claim-level evidence ledger according to the companion diligence skill's evidence contract.
+2. In local mode, create or update one project card in `01_项目卡片/`. In Feishu mode, upsert one Context Record and update the project object artifact.
 3. If the source includes a completed financing valuation, signed/in-closing price, current quote, next-round target, secondary transaction, or acquisition price, apply `Valuation Capture` below before finishing. Do not leave reusable price evidence only in the project card.
-4. Run `scripts/sync_project.py` or `scripts/rebuild_indexes.py`; never hand-append generated index records.
+4. In local mode, run `scripts/sync_project.py` or `scripts/rebuild_indexes.py`; never hand-append generated index records. In Feishu mode, upsert through the registered adapter and return a package receipt.
 5. Add or update key people only when they meet the higher industry-standing threshold.
 6. Put thesis, sector, valuation, and external-event proposals in `09_待确认更新/` when the reusable change is ambiguous or no safe anchor destination is clear. Apply factual valuation observations directly when their destination and source tier are clear.
 7. Keep passed or archived projects when they are useful comparables or counterexamples.
 8. Skip very low-quality projects that add no reusable learning.
+9. When crossing runtimes, emit a `context-package/v1` or portable Context
+   Registry delta with typed locators, source, version, visibility, and
+   last-verified time.
 
 Use the user's source material and local aliases to determine canonical project names. Do not introduce alternate names unless a source requires alias tracking.
 
@@ -201,7 +252,7 @@ When answering the user, make Memory Graph output decision-useful:
 
 Before finishing:
 
-1. Confirm private Memory Graph files were written only under the user's workspace, not the public skill repo.
+1. Confirm private graph artifacts were written only under the user's workspace or authorized organization environment, not the public skill repo.
 2. Confirm skill files and templates do not contain private project materials.
 3. Confirm project cards use one primary sector from the taxonomy.
 4. Confirm indexes use JSONL with one valid JSON object per line.
@@ -213,3 +264,6 @@ Before finishing:
 10. Confirm unresolved relation targets are typed `external_entity`, not silently treated as projects.
 11. Confirm completed/funded valuations for meaningful comparables were added to the relevant valuation anchor or explicitly queued, even when the recommendation is `pause` or `pass`.
 12. Confirm signed prices, current quotes, next-round targets, and internal fair-value ranges are labeled separately from completed transactions.
+13. Confirm cross-runtime packages validate as `context-package/v1`, use typed
+    locators, preserve permissions, and upsert the canonical object instead of
+    creating duplicates.
