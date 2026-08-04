@@ -16,10 +16,11 @@ from memory_graph_lib import read_jsonl, write_json_atomic
 
 INDEXES = [
     ("项目索引.jsonl", "project"),
+    ("赛道索引.jsonl", "sector"),
+    ("技术主题索引.jsonl", "technical_theme"),
+    ("估值索引.jsonl", "resource"),
     ("事件索引.jsonl", "event"),
     ("人物索引.jsonl", "person"),
-    ("观点索引.jsonl", "thesis"),
-    ("估值索引.jsonl", "resource"),
 ]
 LOCATOR_BACKENDS = {"local", "feishu", "web", "other"}
 LOCATOR_KINDS = {"file", "folder", "document", "base_record", "url"}
@@ -118,8 +119,8 @@ def first(record: dict[str, Any], *keys: str) -> str:
 
 def stable_id(context_type: str, title: str, record: dict[str, Any]) -> str:
     explicit = first(
-        record, "project_id", "event_id", "person_id", "thesis_id",
-        "valuation_id", "context_id"
+        record, "project_id", "sector_id", "theme_id", "valuation_id",
+        "event_id", "person_id", "context_id"
     )
     if explicit:
         return explicit
@@ -173,7 +174,7 @@ def record_to_context(
     memory_root: Path,
     visibility: str,
 ) -> dict[str, Any]:
-    title = first(record, "name", "title", "person", "thesis", "sector")
+    title = first(record, "name", "title", "person", "sector")
     if not title:
         raise ValueError(f"{context_type} index record has no title")
     artifact_path = record_artifact_path(

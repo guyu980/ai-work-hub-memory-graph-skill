@@ -27,6 +27,26 @@ def stable_id(prefix: str, value: str) -> str:
     return f"{prefix}:{digest}"
 
 
+def latest_date(text: str) -> str:
+    values = re.findall(r"\b\d{4}-\d{2}-\d{2}\b", text)
+    return max(values) if values else ""
+
+
+def compact_text(text: str, limit: int = 700) -> str:
+    normalized = re.sub(r"\s+", " ", text).strip()
+    if len(normalized) <= limit:
+        return normalized
+    return normalized[: limit - 1].rstrip() + "…"
+
+
+def compact_entities(text: str) -> list[str]:
+    entities = section_entities(text)
+    if entities:
+        return entities
+    compact = compact_text(text)
+    return [compact] if compact else []
+
+
 def load_state(workspace_root: Path, fields: dict[str, str]) -> dict[str, Any]:
     path = resolve_workspace_path(
         workspace_root,
@@ -204,7 +224,7 @@ def project_records(
 
 def event_records(memory_root: Path) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
-    for path in sorted((memory_root / "06_事件卡片").glob("*.md")):
+    for path in sorted((memory_root / "05_事件卡片").glob("*.md")):
         parsed = parse_markdown(path)
         fields = parsed["fields"]
         sections = parsed["sections"]
@@ -233,7 +253,7 @@ def event_records(memory_root: Path) -> list[dict[str, Any]]:
 
 def person_records(memory_root: Path) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
-    for path in sorted((memory_root / "08_人物卡片").glob("*.md")):
+    for path in sorted((memory_root / "06_人物卡片").glob("*.md")):
         parsed = parse_markdown(path)
         fields = parsed["fields"]
         sections = parsed["sections"]
@@ -266,37 +286,61 @@ def person_records(memory_root: Path) -> list[dict[str, Any]]:
     return records
 
 
-def thesis_records(memory_root: Path) -> list[dict[str, Any]]:
-    path = memory_root / "05_观点账本" / "观点账本.md"
-    text = path.read_text(encoding="utf-8")
-    chunks = re.split(r"(?m)^##\s+", text)[1:]
+def sector_records(memory_root: Path) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
-    for chunk in chunks:
-        lines = chunk.splitlines()
-        title = lines[0].strip()
-        fields: dict[str, str] = {}
-        for line in lines[1:]:
-            match = re.match(r"^-\s+([^:：]+)[:：]\s*(.*)$", line)
-            if match:
-                fields[match.group(1).strip()] = match.group(2).strip()
-        thesis = fields.get("观点", "").strip()
-        if not thesis:
-            continue
+    for path in sorted((memory_root / "02_赛道地图").glob("*.md")):
+        parsed = parse_markdown(path)
+        sections = parsed["sections"]
+        name = parsed["title"].split("｜", 1)[-1].strip()
         records.append(
             {
                 "schema_version": 2,
-                "type": "thesis",
-                "thesis_id": stable_id("thesis", title),
+                "type": "sector",
+                "sector_id": stable_id("sector", name),
+                "title": name,
+                "primary_sector": name,
+                "tags": [],
+                "summary": compact_text(sections.get("当前判断", "")),
+                "strong_signals": compact_entities(
+                    sections.get("强信号", "")
+                ),
+                "related_projects": section_entities(
+                    sections.get("已看项目", "")
+                ),
+                "counterexamples": section_entities(
+                    sections.get("代表性反例", "")
+                ),
+                "updated_at": latest_date(parsed["text"]),
+                "source_path": path.relative_to(memory_root).as_posix(),
+            }
+        )
+    return records
+
+
+def technical_theme_records(memory_root: Path) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for path in sorted((memory_root / "03_技术主题").glob("*.md")):
+        parsed = parse_markdown(path)
+        sections = parsed["sections"]
+        title = parsed["title"].split("｜", 1)[-1].strip()
+        records.append(
+            {
+                "schema_version": 2,
+                "type": "technical_theme",
+                "theme_id": stable_id("technical-theme", title),
                 "title": title,
-                "thesis": thesis,
-                "status": fields.get("状态", ""),
-                "confidence": fields.get("置信度", ""),
-                "supporting_evidence": fields.get("支持证据", ""),
-                "counterevidence": fields.get("反向证据", ""),
-                "related_projects": split_csv(fields.get("相关项目")),
-                "related_events": split_csv(fields.get("相关事件")),
-                "falsifier": fields.get("什么信号会推翻", ""),
-                "updated_at": fields.get("最近更新", ""),
+                "tags": [],
+                "summary": compact_text(sections.get("当前理解", "")),
+                "key_variables": compact_text(
+                    sections.get("技术路线与关键变量", "")
+                ),
+                "validation_signals": compact_entities(
+                    sections.get("可验证信号", "")
+                ),
+                "related_projects": section_entities(
+                    sections.get("相关项目", "")
+                ),
+                "updated_at": latest_date(parsed["text"]),
                 "source_path": path.relative_to(memory_root).as_posix(),
             }
         )
@@ -315,10 +359,8 @@ def valuation_records(memory_root: Path) -> list[dict[str, Any]]:
                 "valuation_id": stable_id("valuation", sector),
                 "sector": sector,
                 "source_path": path.relative_to(memory_root).as_posix(),
-                "updated_at": first_paragraph(
-                    parsed["sections"].get("最近更新", "")
-                ),
-                "summary": first_paragraph(
+                "updated_at": latest_date(parsed["text"]),
+                "summary": compact_text(
                     parsed["sections"].get("我们自己的价格纪律", "")
                 ),
             }
@@ -343,10 +385,11 @@ def main() -> int:
     outputs = {
         "项目索引.jsonl": projects,
         "关系索引.jsonl": relations,
+        "赛道索引.jsonl": sector_records(memory_root),
+        "技术主题索引.jsonl": technical_theme_records(memory_root),
+        "估值索引.jsonl": valuation_records(memory_root),
         "事件索引.jsonl": event_records(memory_root),
         "人物索引.jsonl": person_records(memory_root),
-        "观点索引.jsonl": thesis_records(memory_root),
-        "估值索引.jsonl": valuation_records(memory_root),
     }
     for name, records in outputs.items():
         path = memory_root / "00_索引" / name

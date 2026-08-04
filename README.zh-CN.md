@@ -1,134 +1,146 @@
-# AI Work Hub Memory Graph Skill
+# AI Work Hub Memory Graph
 
 [English](README.md)
 
-这是一个用于维护私有“投资认知库”的 Codex skill。默认使用本地文件；获授权的飞书 Context Registry 和跨 Agent 迁移是按需启用的高级能力。
+这是一个为投资项目建立私有、长期记忆的 Codex skill。它把项目尽调、AI 日报/周报、GitHub 雷达、赛道研究、技术主题、估值信息、重大事件和高信号人物连接起来，但不会把图谱变成第二份材料仓库。
 
-它把新 BP、飞书纪要、datapack、新闻、GitHub 项目、技术主题和估值问题，连接到过去看过的项目、赛道地图、技术观点、估值锚点和持续更新的观点账本。
+## 它解决什么问题
 
-## 它能做什么
+面对一个新项目或新事件时，可以自动联想到：
 
-- 在 AI Work Hub 工作区里初始化本地私有 `Memory Graph/`。
-- 创建和更新项目卡片、事件卡片、赛道地图、技术主题、估值锚点和观点账本。
-- 只跟踪具备可复用行业地位、学术/技术谱系或操盘记录的高信号人物，不做成通讯录、CRM 或项目团队花名册。
-- 看新项目之前，检索相似项目、反例项目、估值锚点、赛道观点和技术主题。
-- 将 AI科技与宏观事件日报/周报、GitHub 全球项目雷达里的重要增量写入最合适的项目、赛道、技术、估值、人物、观点或事件文件，不设置机械数量上限。
-- 保持 skill 本身公开可复用，但知识库内容只保存在本地或获授权的组织环境，不上传 GitHub。
-- 与现有项目直接相关的新闻进入项目卡片 `外部动态`，不再批量生成 `needs_review` 文件，也不自动改写正式投资判断。
-- 只有具有独立、持久决策价值的变化才创建事件卡片；项目经营更新留在项目卡片。
-- 在明确要求组织部署、同步、迁移或跨 Agent handoff 时，导出 `context-package/v1`。
+- 相似项目和反例；
+- 当前赛道判断；
+- 相关技术路线、瓶颈和验证标准；
+- 估值锚点和价格纪律；
+- 会长期影响判断的外部变化；
+- 具有跨项目价值的人物。
 
-## 默认存储与高级部署
+完成判断后，只把未来还能复用的知识增量写回图谱。
 
-普通使用默认保存为本地 Markdown 卡片与可重建 JSONL 索引。读取飞书链接不代表切换到飞书存储。
+## 知识模型
 
-只有用户明确要求 canonical Feishu storage、本地/组织同步、Context Registry、迁移、bridge 或跨 Agent handoff 时，才读取：
-
-[`advanced-deployment.md`](ai-work-hub-memory-graph/references/advanced-deployment.md)
-
-高级模式下导出本地 Graph：
-
-```bash
-python3 ai-work-hub-memory-graph/scripts/export_context_registry.py \
-  --workspace-root "$HOME/Documents/AI Work Hub" \
-  --output /tmp/context-registry-package.json
-python3 ai-work-hub-memory-graph/scripts/validate_context_package.py \
-  /tmp/context-registry-package.json
+```text
+项目原始资料
+  -> 项目状态和聚焦证据
+  -> 压缩后的 Markdown 知识对象
+  -> 自动生成的 JSONL 检索索引
 ```
 
-## 安装说明
+当前目录：
 
-通过 GitHub 安装：
+```text
+Memory Graph/
+  00_索引/
+  01_项目卡片/
+  02_赛道地图/
+  03_技术主题/
+  04_估值锚点/
+  05_事件卡片/
+  06_人物卡片/
+  待复核.md
+  .system/
+  config/
+  templates/
+```
+
+不再单独维护观点账本。可复用的投资观点进入最容易被再次调用的赛道、技术、估值、项目或工作流规则。
+
+赛道分类由用户自定义；skill 提供的默认分类只是起点，不是强制标准。
+
+## 写入路由
+
+| 新信息 | 保存位置 |
+| --- | --- |
+| 单个公司的当前判断或证据 | 项目文件夹和项目卡片 |
+| 已知项目的公开新闻 | 项目卡片带日期的 `外部动态` |
+| 跨公司的市场规律 | 赛道地图 |
+| 技术路线、瓶颈或验证方法 | 技术主题 |
+| 有复用价值的融资或市场价格 | 估值锚点 |
+| 具有独立、持久价值的外部变化 | 事件卡片 |
+| 具有独立行业地位的人物 | 人物卡片 |
+| 重要但暂时无明确归宿 | 单一 `待复核.md` 条目 |
+| 重复或低信号信息 | 只留在项目或报告归档 |
+
+## 通过 GitHub 安装
 
 ```bash
-mkdir -p ~/Documents/skills-repos
+mkdir -p ~/Documents/skills-repos ~/.codex/skills
 cd ~/Documents/skills-repos
 git clone https://github.com/guyu980/ai-work-hub-memory-graph-skill.git
-cd ai-work-hub-memory-graph-skill
+ln -s "$(pwd)/ai-work-hub-memory-graph-skill/ai-work-hub-memory-graph" \
+  ~/.codex/skills/ai-work-hub-memory-graph
 ```
 
-软链到 Codex skills 目录：
+初始化私有图谱：
 
 ```bash
-mkdir -p ~/.codex/skills
-ln -s "$(pwd)/ai-work-hub-memory-graph" ~/.codex/skills/ai-work-hub-memory-graph
-```
-
-如果本地已经有同名 skill，先备份旧版本：
-
-```bash
-mv ~/.codex/skills/ai-work-hub-memory-graph ~/.codex/skills/ai-work-hub-memory-graph.backup
-ln -s "$(pwd)/ai-work-hub-memory-graph" ~/.codex/skills/ai-work-hub-memory-graph
-```
-
-初始化本地私有知识库：
-
-```bash
-python3 ai-work-hub-memory-graph/scripts/init_memory_graph.py \
+python3 ai-work-hub-memory-graph-skill/ai-work-hub-memory-graph/scripts/init_memory_graph.py \
   --workspace-root "$HOME/Documents/AI Work Hub"
 ```
 
-生成目录：
-
-```text
-~/Documents/AI Work Hub/Memory Graph/
-```
-
-这个生成出来的 `Memory Graph/` 是私有知识库，不要上传到 public GitHub。
-
-## 第一次使用
-
-把新项目和历史认知连接起来：
-
-```text
-Use $ai-work-hub-memory-graph to connect this BP to prior projects, sector views, technical themes, and valuation anchors.
-```
-
-初始化或修复本地知识库：
-
-```text
-Use $ai-work-hub-memory-graph to initialize my Memory Graph under ~/Documents/AI Work Hub.
-```
-
-处理日报/周报：
-
-```text
-Use $ai-work-hub-memory-graph to extract high-signal event cards from this AI科技与宏观事件日报.
-```
-
-沉淀高信号创始人、科学家或技术负责人：
-
-```text
-Use $ai-work-hub-memory-graph to add this founder/scientist as a key-person signal only if they have reusable industry standing beyond this one project.
-```
-
-## 分类方式
-
-初始化脚本会创建一套默认赛道分类，方便开箱即用；这只是默认模板，不是固定规则。用户可以直接修改 `Memory Graph/02_赛道地图/` 下的赛道文件，并让项目索引里的 `primary_sector` 跟随自己的分类方式。
-
-## 更新这个 Skill
-
-这个 repo 只作为公开 skill 的 source of truth。
-
-修改后：
+后续更新：
 
 ```bash
-git status
-git add ai-work-hub-memory-graph README.md README.zh-CN.md LICENSE .gitignore
-git commit -m "Update memory graph skill"
-git push
+cd ~/Documents/skills-repos/ai-work-hub-memory-graph-skill
+git pull --ff-only
 ```
 
-其他用户更新：
+生成的 `Memory Graph/` 是私有工作区数据，不能推送到这个公开仓库。
+
+## 怎么使用
+
+```text
+使用 $ai-work-hub-memory-graph，在更新图谱之前，把这个项目和历史项目、赛道判断、技术主题及估值锚点连接起来。
+```
+
+日报、周报或 GitHub 雷达完成后：
+
+```text
+使用 $ai-work-hub-memory-graph 处理这份已经归档的报告。低信号内容留在报告，只把有长期价值的增量写入最直接的图谱对象。
+```
+
+## 常用命令
+
+生成精简检索包：
 
 ```bash
-git pull
+python3 ai-work-hub-memory-graph/scripts/build_context_pack.py \
+  --workspace-root "$HOME/Documents/AI Work Hub" \
+  --query "项目 赛道 技术 商业模式"
 ```
 
-## 不要提交这些内容
+重建并校验：
 
-不要提交生成出来的本地知识库、项目资料、飞书登录态、token、私有交易笔记、公司保密信息、私人联系方式、敏感个人信息或用户个人本地配置。
+```bash
+python3 ai-work-hub-memory-graph/scripts/rebuild_indexes.py \
+  --workspace-root "$HOME/Documents/AI Work Hub"
+python3 ai-work-hub-memory-graph/scripts/validate_memory_graph.py \
+  --workspace-root "$HOME/Documents/AI Work Hub"
+```
 
-## License
+整理旧版 v2 图谱：
 
-MIT. See [`LICENSE`](LICENSE).
+```bash
+python3 ai-work-hub-memory-graph/scripts/migrate_memory_graph_v2.py \
+  --workspace-root "$HOME/Documents/AI Work Hub"
+```
+
+## 与其他工作流联动
+
+配套的 [AI Work Hub Diligence](https://github.com/guyu980/ai-work-hub-diligence-skill) skill 负责项目原始资料、持续判断和 todo；本 skill 负责跨项目检索和可复用知识写回。
+
+AI 日报/周报和 GitHub 雷达也可以在报告完成后更新图谱。更新数量不设固定上限：低信号内容留在归档，真正重要的增量全部按最直接的对象写入。
+
+自动化可以向项目卡片追加带来源的外部新闻，但不能静默修改正式投资判断、参与方式、仓位、价格判断或置信度。
+
+## 高级部署
+
+本地 Markdown 和自动生成的 JSONL 已经构成完整默认工作流。组织级 Registry、混合存储、bridge 和可移植 Context Package 都是可选高级能力，见 [`advanced-deployment.md`](ai-work-hub-memory-graph/references/advanced-deployment.md)。
+
+## 仓库边界
+
+公开仓库只包含机制、脚本、模板和 schema。不要提交真实项目卡片、原始资料、私有投资判断、飞书 token 或工作区生成的索引。
+
+其他人通过 Pull Request 提交修改，由仓库维护者审核和合并。
+
+许可证：[MIT](LICENSE)

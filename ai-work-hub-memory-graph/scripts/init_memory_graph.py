@@ -29,9 +29,8 @@ DIRS = [
     "02_赛道地图",
     "03_技术主题",
     "04_估值锚点",
-    "05_观点账本",
-    "06_事件卡片",
-    "08_人物卡片",
+    "05_事件卡片",
+    "06_人物卡片",
     ".system",
     "config",
     "templates",
@@ -39,11 +38,12 @@ DIRS = [
 
 INDEX_FILES = [
     "项目索引.jsonl",
+    "关系索引.jsonl",
+    "赛道索引.jsonl",
+    "技术主题索引.jsonl",
+    "估值索引.jsonl",
     "事件索引.jsonl",
     "人物索引.jsonl",
-    "观点索引.jsonl",
-    "估值索引.jsonl",
-    "关系索引.jsonl",
 ]
 
 
@@ -55,11 +55,12 @@ README = """# AI Work Hub Memory Graph
 
 - 这里保存的是可复用的投资认知，不替代 `项目/` 下的完整尽调材料。
 - 项目卡片用于连续判断；事件卡片只保留具有独立、持久价值的重大事件。
-- 日报/周报全文继续保存在 `自动化归档/`，这里按价值更新相关项目、赛道、技术、估值、人物、观点或重大事件，不设机械数量上限。
+- 日报/周报全文继续保存在 `自动化归档/`，这里只按价值更新相关项目、赛道、技术、估值、人物或重大事件，不设机械数量上限。
 - 本目录可能包含敏感投资判断，不应上传到 public GitHub。
 - 项目目录是完整事实层，项目状态 JSON 是机器可读真相，项目卡片是压缩视图，JSONL 索引均为可重建缓存。
 - 与项目直接相关的新闻进入项目卡片 `外部动态`，可以说明可能影响，但不得静默改写正式投资判断。
 - 清晰的可复用变化直接更新对应文件；只有重要但没有安全归宿的信号才进入单一 `待复核.md`。
+- 不单独维护观点账本；可复用观点进入最直接的赛道、技术、估值、项目或工作流规则。
 """
 
 PROJECT_TEMPLATE = """# 项目卡片｜项目名
@@ -117,7 +118,7 @@ PROJECT_TEMPLATE = """# 项目卡片｜项目名
 
 ## 反例项目
 
-## 相关赛道/技术观点
+## 相关赛道/技术主题
 
 ## 对投资判断的启发
 
@@ -243,25 +244,10 @@ VALUATION_TEMPLATE = """# 估值锚点｜{sector}
 ## 最近更新
 """
 
-THESIS_TEMPLATE = """# 观点账本
-
-## 观点
-
-- 观点:
-- 状态:
-- 置信度:
-- 支持证据:
-- 反向证据:
-- 相关项目:
-- 相关事件:
-- 什么信号会推翻:
-- 最近更新:
-"""
-
 REVIEW_TEMPLATE = """# 待复核
 
 只记录重要但暂时没有安全归宿的信号。普通新闻直接进入相关项目卡片的
-`外部动态`，清晰的跨项目认知直接更新对应赛道、技术、估值或观点文件。
+`外部动态`，清晰的跨项目认知直接更新对应赛道、技术、估值、人物或重大事件文件。
 
 ## 待处理
 """
@@ -325,7 +311,6 @@ def main() -> int:
         "人物卡片模板.md": PERSON_TEMPLATE,
         "事件卡片模板.md": EVENT_TEMPLATE,
         "技术主题模板.md": TECH_TEMPLATE,
-        "观点账本模板.md": THESIS_TEMPLATE,
     }
     for filename, content in templates.items():
         path = memory_root / "templates" / filename
@@ -338,9 +323,6 @@ def main() -> int:
     for sector in VALUATION_SECTORS:
         path = memory_root / "04_估值锚点" / f"{sector}.md"
         events.append(f"{write_if_missing(path, VALUATION_TEMPLATE.format(sector=sector)):7} {path}")
-
-    thesis_path = memory_root / "05_观点账本" / "观点账本.md"
-    events.append(f"{write_if_missing(thesis_path, THESIS_TEMPLATE):7} {thesis_path}")
 
     review_path = memory_root / "待复核.md"
     events.append(f"{write_if_missing(review_path, REVIEW_TEMPLATE):7} {review_path}")
