@@ -2,31 +2,29 @@
 
 [中文说明](README.zh-CN.md)
 
-A Codex skill for maintaining a private cross-project investment knowledge base in local files or an authorized Feishu/Lark Context Registry.
+A Codex skill for maintaining a sparse private cross-project investment knowledge base. Local files are the default; an authorized Feishu/Lark Context Registry is an optional advanced deployment.
 
 It connects new BPs, Feishu notes, datapacks, news items, GitHub projects, technical themes, and valuation questions to prior project cards, sector maps, technical views, valuation anchors, and a running thesis ledger.
 
 ## What It Does
 
-- Initializes a local private `Memory Graph/` knowledge base or maps the same semantic records into an authorized Context Registry.
+- Initializes a local private `Memory Graph/` knowledge base.
 - Creates and updates project cards, event cards, sector maps, technical themes, valuation anchors, and thesis entries.
 - Tracks only high-signal people with reusable industry, academic, technical, or operator standing, without becoming a CRM or team roster.
 - Retrieves similar projects, counterexamples, valuation anchors, and sector or technical views before a new project judgment.
-- Post-processes AI technology daily/weekly reports and GitHub radar outputs into high-signal event cards.
+- Post-processes daily/weekly reports and GitHub radar outputs into the most useful project, sector, technical, valuation, people, thesis, or major-event destination, with no mechanical update quota.
 - Keeps the public skill reusable while keeping private investment knowledge in the user's local workspace or authorized organization environment.
-- Exports a portable `context-package/v1` Registry delta for adapter-based upsert.
+- Writes directly relevant news into project-card `外部动态` without silently changing formal investment decisions.
+- Reserves event cards for changes with durable standalone decision value; project operating updates stay with the project.
+- Exports a portable `context-package/v1` only for explicit advanced deployment or handoff.
 
-## Storage Profiles
+## Default Storage And Advanced Deployment
 
-- **Local:** Markdown cards plus rebuildable JSONL indexes.
-- **Feishu/Lark:** Context Registry records plus Drive/Docs object artifacts.
-- **Hybrid:** one declared canonical write target and explicit sync state.
+Normal use stores local Markdown cards plus rebuildable JSONL indexes. Reading a Feishu/Lark source does not switch the graph to Feishu storage.
 
-The node and relation schema stays the same. Only locators, permissions,
-queries, and writeback differ. See
-[`context-storage-contract.md`](ai-work-hub-memory-graph/references/context-storage-contract.md).
+Read [`advanced-deployment.md`](ai-work-hub-memory-graph/references/advanced-deployment.md) only for explicit canonical Feishu storage, local/organization synchronization, Context Registry export, migration, bridge, or cross-agent handoff.
 
-Export a local graph for an organization adapter:
+In advanced mode, export a local graph for an organization adapter:
 
 ```bash
 python3 ai-work-hub-memory-graph/scripts/export_context_registry.py \
