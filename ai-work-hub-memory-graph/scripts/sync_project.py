@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sync one project state to its Memory Graph card and queue graph deltas."""
+"""Sync one project state to its Memory Graph card."""
 
 from __future__ import annotations
 
@@ -36,38 +36,36 @@ def workspace_path(workspace_root: Path, value: str) -> Path | None:
     return path if path.is_absolute() else workspace_root / path
 
 
-def queue_delta(
+def append_review_note(
     memory_root: Path,
     project_name: str,
     delta: dict[str, Any],
     timestamp: str,
 ) -> Path | None:
-    proposals = []
+    proposals: dict[str, list[Any]] = {}
     for kind in (
         "valuation_proposals",
         "thesis_proposals",
         "sector_proposals",
         "event_triggers",
     ):
-        for proposal in delta.get(kind, []):
-            proposals.append(
-                {
-                    "proposal_type": kind,
-                    "project": project_name,
-                    "status": "needs_review",
-                    "created_at": timestamp,
-                    "payload": proposal,
-                }
-            )
+        values = delta.get(kind, [])
+        if values:
+            proposals[kind] = values
     if not proposals:
         return None
-    safe_time = timestamp.replace(":", "-")
-    path = (
-        memory_root
-        / "09_待确认更新"
-        / f"{safe_time}_{project_name}_graph-delta.json"
+    path = memory_root / "待复核.md"
+    if path.exists():
+        existing = path.read_text(encoding="utf-8").rstrip()
+    else:
+        existing = "# 待复核\n\n## 待处理"
+    payload = json.dumps(proposals, ensure_ascii=False, indent=2)
+    section = (
+        f"\n\n### {timestamp} | {project_name}\n\n"
+        "仅在没有安全目标文件时保留；确认后更新对应知识文件并删除本条。\n\n"
+        f"```json\n{payload}\n```\n"
     )
-    write_json_atomic(path, {"schema_version": 2, "proposals": proposals})
+    path.write_text(existing + section, encoding="utf-8")
     return path
 
 
@@ -159,19 +157,17 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    queued = None
+    review_note = None
     if args.graph_delta:
-        queued = queue_delta(
+        review_note = append_review_note(
             memory_root,
             project_name,
             load_json(Path(args.graph_delta).expanduser().resolve()),
             now,
         )
-    log_path = (
-        memory_root
-        / "10_运行记录"
-        / f"{now.replace(':', '-')}_{project_name}_sync.json"
-    )
+    system_root = memory_root / ".system"
+    system_root.mkdir(parents=True, exist_ok=True)
+    log_path = system_root / "last-sync.json"
     write_json_atomic(
         log_path,
         {
@@ -180,8 +176,10 @@ def main() -> int:
             "project": project_name,
             "state_path": state_path.relative_to(workspace_root).as_posix(),
             "card_path": card_path.relative_to(memory_root).as_posix(),
-            "queued_delta_path": (
-                queued.relative_to(memory_root).as_posix() if queued else ""
+            "review_note_path": (
+                review_note.relative_to(memory_root).as_posix()
+                if review_note
+                else ""
             ),
             "completed_at": now,
         },
@@ -199,9 +197,9 @@ def main() -> int:
             check=True,
         )
     print(f"Synced {project_name}")
-    if queued:
-        print(f"Queued review-only graph delta: {queued}")
-    print(f"Run log: {log_path}")
+    if review_note:
+        print(f"Appended unresolved graph delta to: {review_note}")
+    print(f"Latest sync metadata: {log_path}")
     return 0
 
 

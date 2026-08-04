@@ -31,10 +31,8 @@ DIRS = [
     "04_估值锚点",
     "05_观点账本",
     "06_事件卡片",
-    "07_周度沉淀",
     "08_人物卡片",
-    "09_待确认更新",
-    "10_运行记录",
+    ".system",
     "config",
     "templates",
 ]
@@ -56,11 +54,12 @@ README = """# AI Work Hub Memory Graph
 原则：
 
 - 这里保存的是可复用的投资认知，不替代 `项目/` 下的完整尽调材料。
-- 项目卡片和事件卡片用于快速检索、跨项目联想和后续判断校准。
-- 日报/周报全文继续保存在 `自动化归档/`，这里只沉淀会改变判断的高信号事件。
+- 项目卡片用于连续判断；事件卡片只保留具有独立、持久价值的重大事件。
+- 日报/周报全文继续保存在 `自动化归档/`，这里按价值更新相关项目、赛道、技术、估值、人物、观点或重大事件，不设机械数量上限。
 - 本目录可能包含敏感投资判断，不应上传到 public GitHub。
 - 项目目录是完整事实层，项目状态 JSON 是机器可读真相，项目卡片是压缩视图，JSONL 索引均为可重建缓存。
-- 外部新闻或跨项目观点更新默认进入 `09_待确认更新/`，未经复核不得自动改变投资判断。
+- 与项目直接相关的新闻进入项目卡片 `外部动态`，可以说明可能影响，但不得静默改写正式投资判断。
+- 清晰的可复用变化直接更新对应文件；只有重要但没有安全归宿的信号才进入单一 `待复核.md`。
 """
 
 PROJECT_TEMPLATE = """# 项目卡片｜项目名
@@ -111,6 +110,8 @@ PROJECT_TEMPLATE = """# 项目卡片｜项目名
 ## 公司/来源自述
 
 ## 仍需确认
+
+## 外部动态
 
 ## 相似项目
 
@@ -221,11 +222,9 @@ VALUATION_TEMPLATE = """# 估值锚点｜{sector}
 
 ## 一级市场可比
 
-### 已成交 / 已融到钱的估值
+### 公司 / 材料 / 公开口径
 
-### 已签署 / 交割中
-
-### 在融报价 / 下一轮目标
+### 深度交易核验（仅在必要时）
 
 ## 商业模式分层
 
@@ -257,6 +256,14 @@ THESIS_TEMPLATE = """# 观点账本
 - 相关事件:
 - 什么信号会推翻:
 - 最近更新:
+"""
+
+REVIEW_TEMPLATE = """# 待复核
+
+只记录重要但暂时没有安全归宿的信号。普通新闻直接进入相关项目卡片的
+`外部动态`，清晰的跨项目认知直接更新对应赛道、技术、估值或观点文件。
+
+## 待处理
 """
 
 
@@ -335,6 +342,9 @@ def main() -> int:
     thesis_path = memory_root / "05_观点账本" / "观点账本.md"
     events.append(f"{write_if_missing(thesis_path, THESIS_TEMPLATE):7} {thesis_path}")
 
+    review_path = memory_root / "待复核.md"
+    events.append(f"{write_if_missing(review_path, REVIEW_TEMPLATE):7} {review_path}")
+
     config_path = memory_root / "config" / "schema-v2.json"
     if config_path.exists():
         events.append(f"exists  {config_path}")
@@ -357,13 +367,13 @@ def main() -> int:
                     memory_root, workspace_root
                 ),
                 "workflow_outputs": folder_locator(
-                    memory_root / "09_待确认更新", workspace_root
+                    memory_root, workspace_root
                 ),
                 "actions_outcomes": folder_locator(
-                    memory_root / "07_周度沉淀", workspace_root
+                    memory_root / ".system", workspace_root
                 ),
                 "governance": folder_locator(
-                    memory_root / "09_待确认更新", workspace_root
+                    memory_root / ".system", workspace_root
                 ),
                 "sources": folder_locator(workspace_root, workspace_root),
             },

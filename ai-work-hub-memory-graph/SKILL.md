@@ -1,21 +1,15 @@
 ---
 name: ai-work-hub-memory-graph
-description: Use when the user wants AI Work Hub to connect a live or historical invested/pass project, BP, Feishu note, transcript, datapack, news item, financing event, GitHub project, technical topic, sector question, or valuation question to prior projects, sector maps, technical themes, valuation anchors, and a running investment thesis. Also use to initialize, migrate, retrieve from, synchronize, validate, or maintain a local private Memory Graph or an authorized Feishu/Lark Context Registry; create project/event cards; update sector or technical views; produce or consume portable Context Packages; or run post-processing after the AI科技与宏观事件日报/周报 or ai-work-hub-diligence workflows.
+description: Use when the user wants AI Work Hub to connect a live or historical project, BP, Feishu note, transcript, datapack, news item, financing event, GitHub project, technical topic, sector question, or valuation question to prior projects and durable investment knowledge. Initializes, retrieves from, synchronizes, validates, and maintains a sparse private Memory Graph of project cards, sector and technical views, valuation references, thesis entries, high-signal people, and genuinely important events. Also post-processes recurring reports without copying high-frequency low-value content. Organization Context Registries and portable Context Packages are optional advanced modes.
 ---
 
 # AI Work Hub Memory Graph
 
 ## Core Contract
 
-Treat the Memory Graph as the cross-project investment knowledge layer for AI Work Hub. It is not a replacement for canonical project objects or daily/weekly reports. It stores compressed, structured knowledge so new projects, news, technology directions, and valuations can be compared against prior work.
+Treat the Memory Graph as the cross-project investment decision-memory layer for AI Work Hub. It is not a replacement for full project folders or daily/weekly reports. Store what the user currently believes, why, and what would change the view. Do not store every update merely because it happened.
 
 Keep the skill public and reusable, but keep generated knowledge private or inside an authorized organization environment. Do not commit project cards, event cards, sector views, valuation anchors, deal notes, Feishu exports, or any private investment judgment to a public repo.
-
-Before writing, resolve the storage profile. Read
-`references/context-storage-contract.md` for local, Feishu/Lark, hybrid, or
-cross-runtime work. The node schema, relation semantics, provenance, and
-retrieval output stay the same across backends. Only the adapter changes
-locators, permissions, query mechanics, and writeback.
 
 Default private knowledge base path:
 
@@ -25,13 +19,11 @@ Default private knowledge base path:
 
 If the workspace root is unclear, ask one short question before writing. If the user explicitly requests chat-only work, do not create or update files.
 
-For Feishu mode, use an authorized Context Registry for searchable records and
-Drive/Docs object roots for full artifacts. Do not hardcode tenant-specific
-Base IDs, field IDs, folder tokens, or permission groups in this public skill.
-Resolve them from the deployment manifest.
-
-For hybrid mode, declare one canonical write target and a synchronization
-status. Never let local and organization copies silently diverge.
+Use local storage by default. Reading a Feishu/Lark link is source intake, not a
+storage-profile switch. Only activate a Feishu Context Registry, hybrid sync,
+or portable Context Package when the user explicitly requests organization
+deployment, migration, cross-runtime handoff, or a bridge; then read
+`references/advanced-deployment.md`.
 
 ## Initialize Local Profile
 
@@ -61,44 +53,14 @@ Memory Graph/
   04_估值锚点/
   05_观点账本/
   06_事件卡片/
-  07_周度沉淀/
   08_人物卡片/
-  09_待确认更新/
-  10_运行记录/
+  待复核.md
+  .system/
   config/
   templates/
 ```
 
 Read `references/schema.md` before creating or updating cards, indexes, sector views, valuation anchors, or thesis entries.
-
-## Initialize Feishu Profile
-
-Do not reproduce the local JSONL filesystem literally inside Feishu. Preserve
-the same logical record schema through an adapter:
-
-- Context Registry: project, event, report, thesis, decision-snapshot,
-  resource, and workflow-output records.
-- Object folders: full sources, structured context, workflow outputs, actions
-  and outcomes, and governance artifacts.
-- Base views: retrieval, review queue, permissions, and current status.
-- Deployment manifest: stable-key to live object-ID mapping.
-
-The Context Registry is an index, not a second copy of every document. Claim-
-level evidence stays inside the relevant project or event object.
-
-To move a local graph into a Feishu or other organization adapter, export a
-portable delta:
-
-```bash
-python3 <skill_dir>/scripts/export_context_registry.py \
-  --workspace-root "<workspace_root>" \
-  --output "<output_context_package.json>"
-python3 <skill_dir>/scripts/validate_context_package.py \
-  "<output_context_package.json>"
-```
-
-The adapter must upsert by `context_id`; it must not create duplicate records
-on every export.
 
 ## Taxonomy
 
@@ -137,15 +99,10 @@ Default people workflow:
 
 Use this workflow before and after `ai-work-hub-diligence` or any project review.
 
-If the input is a `context-package/v1`, validate it against
-`references/context-package.schema.json` before retrieval or writeback. Resolve
-the canonical object by object ID and aliases; a new package from another
-runtime does not imply a new project.
-
 Before judging a new project:
 
 1. Extract the project name, sector, technical route, business model, customer type, stage, valuation, founder/team entities, and source date from the material.
-2. Build a bounded context pack. In local mode use `scripts/build_context_pack.py`; in Feishu mode query the Context Registry and fetch the selected source artifacts through the adapter. Retrieval is a shortlist, not evidence.
+2. Build a bounded local context pack with `scripts/build_context_pack.py`. Retrieval is a shortlist, not evidence. If advanced organization deployment was explicitly activated, follow `references/advanced-deployment.md` instead.
 3. Identify similar projects, useful counterexamples, valuation anchors, related technical themes, and active thesis entries.
 4. Add a concise `Memory Graph 联想` section to the answer or running project memo:
    - 最相似的已看项目
@@ -157,17 +114,15 @@ Before judging a new project:
 
 After the project view is formed or updated:
 
-1. Create or update the canonical project object's state and claim-level evidence ledger according to the companion diligence skill's evidence contract.
-2. In local mode, create or update one project card in `01_项目卡片/`. In Feishu mode, upsert one Context Record and update the project object artifact.
-3. If the source includes a completed financing valuation, signed/in-closing price, current quote, next-round target, secondary transaction, or acquisition price, apply `Valuation Capture` below before finishing. Do not leave reusable price evidence only in the project card.
-4. In local mode, run `scripts/sync_project.py` or `scripts/rebuild_indexes.py`; never hand-append generated index records. In Feishu mode, upsert through the registered adapter and return a package receipt.
+1. Create or update the project state and focused evidence ledger according to the companion diligence skill's evidence contract.
+2. Create or update one project card in `01_项目卡片/`.
+3. If the source includes a useful financing or transaction reference, apply `Valuation Capture` below without defaulting to agreement or closing verification.
+4. Run `scripts/sync_project.py` or `scripts/rebuild_indexes.py`; never hand-append generated index records.
 5. Add or update key people only when they meet the higher industry-standing threshold.
-6. Put thesis, sector, valuation, and external-event proposals in `09_待确认更新/` when the reusable change is ambiguous or no safe anchor destination is clear. Apply factual valuation observations directly when their destination and source tier are clear.
+6. Apply clear reusable changes directly to the existing sector map, technical theme, valuation reference, thesis entry, person card, or major-event card. If no safe destination exists and the signal is important enough to revisit, add one concise line to the single `待复核.md`; do not create per-input proposal files.
 7. Keep passed or archived projects when they are useful comparables or counterexamples.
 8. Skip very low-quality projects that add no reusable learning.
-9. When crossing runtimes, emit a `context-package/v1` or portable Context
-   Registry delta with typed locators, source, version, visibility, and
-   last-verified time.
+9. When public news or an external report directly affects an existing project, append a dated, sourced note under that project card's `外部动态`. The automation may state a possible positive, negative, or neutral effect, but must not silently rewrite the project's formal investment decision.
 
 Use the user's source material and local aliases to determine canonical project names. Do not introduce alternate names unless a source requires alias tracking.
 
@@ -179,63 +134,81 @@ not delete them merely because they are archived.
 
 ## Valuation Capture
 
-Treat market price evidence and investment judgment as separate layers. A valuation can be a useful market anchor even when the project is overpriced, paused, passed, or outside the fund's strategy.
+Treat market price evidence and investment judgment as separate layers. Store a
+valuation only when it is a useful comparable or affects price discipline.
 
-Classify every financing or transaction price before deciding how to store it:
+The default record is intentionally light:
 
-1. **Completed / funded / closed**: money has been invested or the transaction has closed. Add it to the relevant `04_估值锚点/` file by default when the project is a meaningful comparable. A public filing or announcement is strongest, but a private deal document that explicitly states `已交割` is still usable when labeled `材料已成交口径`.
-2. **Signed / in closing**: a binding agreement, lead commitment, or signed term sheet exists but closing is incomplete. Keep it separate from completed rounds and state the remaining condition.
-3. **In-market quote**: the company, founder, FA, or current round materials quote a pre-money or post-money valuation. Preserve it as a lower-weight market signal with source and date; never relabel it as completed.
-4. **Next-round target / aspiration**: record only as a low-confidence financing expectation or sentiment signal.
-5. **Our fair-value view**: state the comfortable range, price judgment, and required milestones separately. Never overwrite a market transaction with the internal fair value or use a transaction price as automatic proof of fairness.
+- project, date, round or operating stage;
+- stated pre-money or post-money valuation when known;
+- financing amount and currency when known;
+- source context and source reference;
+- relevant operating maturity or metric denominator when available;
+- a short note explaining why it is or is not comparable.
 
-For each reusable observation, capture as many of these fields as the source supports:
+Do not require agreements, payment proof,工商 changes, or exact closing status
+for routine BP, interview, datapack, news, or radar intake. Add transaction
+status, special rights, secondary components, or closing detail only when they
+change ownership, portfolio marking, return math, closing risk, legal rights,
+source conflict, or an active investment decision.
 
-- project, date, round, transaction status;
-- pre-money/post-money valuation, amount raised, currency;
-- source tier and source reference;
-- operating stage and the latest revenue/ARR/gross profit/profit/order metrics available at that time;
-- implied multiples when decision-useful;
-- unusual rights, strategic consideration, control premium, secondary component, or other terms that impair comparability.
-
-Do not omit a completed valuation merely because operating data is incomplete. Store the price fact, mark the missing denominator, and avoid calculating unsupported multiples. When sources conflict, preserve the competing observations with their source tiers rather than silently choosing one.
-
-Before finishing any project round, explicitly check:
-
-```text
-Valuation capture
-- Completed/funded valuation found:
-- Signed/in-closing price found:
-- Current quote or next-round target found:
-- Relevant valuation anchor updated or proposal queued:
-- Market price and our fair-value view kept separate:
-```
+Always keep company/source-stated market prices separate from the internal
+fair-value range. Preserve conflicting sources instead of forcing one number.
 
 ## Daily And Weekly Report Post-Processing
 
-After the `AI科技与宏观事件日报/周报` workflow generates and archives a report, run a light Memory Graph pass:
+After the `AI科技与宏观事件日报/周报` workflow generates and archives a report, run a selective Memory Graph pass. Do not impose a fixed maximum on how many insights a report may contribute; use materiality and reuse value instead:
 
 1. Read the finalized local report body, not just the chat summary.
-2. Extract only high-signal events that may affect investment judgment, valuation anchors, sector direction, technical direction, or watchlist priorities.
-3. Create event cards in `06_事件卡片/` for those events.
-4. Append one JSONL line per event to `00_索引/事件索引.jsonl`.
+2. Extract only changes that improve a later project judgment, sector or technical view, valuation comparison, person assessment, or durable thesis.
+3. Update the most direct existing destination. Create an event card only when the event is independently important and durable, not when it is merely a project operating update or another copy of a financing item.
+4. Rebuild generated indexes after Markdown updates; never hand-edit JSONL.
 5. If a report introduces a founder, scientist, professor, open-source maintainer, or technical/product leader with clear industry standing, update the people index or person card. Do this only when the person is likely to matter for future project comparison; ordinary financing founders stay in the report archive and project/event card.
-6. Capture completed financing valuations for meaningful comparables even when they do not change the investment thesis. Keep quotes and next-round targets as lower-weight observations.
+6. Capture meaningful valuation references with their source context and comparability note. Do not perform transaction-document verification unless the deeper status is decision-sensitive.
 7. Update relevant sector maps, technical themes, valuation anchors, or thesis entries only when there is real incremental learning.
 
-Public news may add an `event_trigger` proposal, but it must not automatically
-change a project's investment decision. Mark such triggers `needs_review`.
+When public news directly affects an existing project, append a dated and sourced
+`外部动态` note to that project card. State the possible effect, but do not
+silently change formal investment-decision fields; the next diligence update
+performs the re-rating when warranted. No separate review-queue file is needed
+for ordinary news.
 
 Do not save the full daily/weekly report inside Memory Graph. Do not convert every news item into an event card. Low-signal news should remain only in the daily/weekly archive.
 
 ## GitHub Radar Post-Processing
 
-For GitHub global project radar outputs, use the same post-processing pattern:
+For GitHub global project radar outputs, use the same materiality-based pattern.
+There is no fixed cap on Memory Graph updates, and a GitHub development may be
+an event when it independently changes technical or investment understanding:
 
-1. Treat each truly high-value repo as an event card, project card, or technical-theme update depending on what it teaches.
+1. Treat each truly high-value repo as an event card, project card, sector update, or technical-theme update depending on what it teaches.
 2. Separate heat from durable technical signal.
 3. When reliable, capture only industry-significant maintainers, founders, scientists, or lab leads as people-index entries; if uncertain, write `不明确` in the radar report rather than creating a pending people entry from names, language, or weak affiliation.
-4. Prefer updating technical themes and sector maps over creating many thin project cards.
+4. Prefer updating existing technical themes and sector maps over creating thin duplicate cards, while allowing any number of genuinely material updates.
+
+## Event Threshold
+
+Create an event card only when the event has durable standalone value and
+changes at least one of:
+
+- a sector or technical view;
+- a reusable valuation reference;
+- the priority or interpretation of one or more active projects; or
+- an investment thesis that will matter in future retrieval.
+
+A project datapack, quarterly update, customer interview, or cash-conversion
+change belongs in the project judgment and project card. Promote it to a sector
+or thesis update only when it supports a reusable cross-project pattern. There
+is no numeric event quota; the test is whether the card will still help a future
+decision after the underlying report is forgotten.
+
+## Advanced Deployment
+
+Read `references/advanced-deployment.md` only when the user explicitly requests
+canonical Feishu/Lark storage, local/organization synchronization, Context
+Registry export, cross-runtime handoff, migration, or a bridge. Ordinary local
+retrieval and Feishu-link reading do not require a storage profile or Context
+Package.
 
 ## Output Style
 
@@ -256,14 +229,12 @@ Before finishing:
 2. Confirm skill files and templates do not contain private project materials.
 3. Confirm project cards use one primary sector from the taxonomy.
 4. Confirm indexes use JSONL with one valid JSON object per line.
-5. Confirm low-value projects are not over-preserved.
-6. Confirm daily/weekly post-processing extracted only high-signal events.
+5. Confirm low-value projects and high-frequency project updates are not over-preserved as standalone graph objects.
+6. Confirm recurring-report post-processing used materiality rather than a fixed quota and updated the most direct destination.
 7. Confirm people cards contain no private contact information and distinguish verified facts from source claims and pending identity checks.
-8. Rebuild all JSONL indexes and run `scripts/validate_memory_graph.py`.
+8. Rebuild all JSONL indexes and run `scripts/validate_memory_graph.py`; keep successful sync metadata only in `.system/last-sync.json`.
 9. Confirm structured decision, play, sizing, and price fields are separate.
 10. Confirm unresolved relation targets are typed `external_entity`, not silently treated as projects.
-11. Confirm completed/funded valuations for meaningful comparables were added to the relevant valuation anchor or explicitly queued, even when the recommendation is `pause` or `pass`.
-12. Confirm signed prices, current quotes, next-round targets, and internal fair-value ranges are labeled separately from completed transactions.
-13. Confirm cross-runtime packages validate as `context-package/v1`, use typed
-    locators, preserve permissions, and upsert the canonical object instead of
-    creating duplicates.
+11. Confirm useful valuation references preserve source context and remain separate from internal fair value without unnecessary closing verification.
+12. Confirm public news affecting an existing project appears as a sourced `外部动态` and did not silently overwrite formal decision fields.
+13. Confirm advanced deployment was activated only by an explicit request and then followed `references/advanced-deployment.md`.

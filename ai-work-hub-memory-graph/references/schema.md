@@ -1,9 +1,8 @@
 # Memory Graph Schema v2
 
-Read `context-storage-contract.md` for local, Feishu/Lark, and hybrid storage.
-The schema below describes the local adapter. A Feishu Context Registry uses
-the same semantic records and relations, while physical locators and query
-mechanics differ.
+The schema below describes the default local Memory Graph. Read
+`advanced-deployment.md` only for explicit Feishu/Lark, hybrid, migration, or
+cross-runtime requests.
 
 Use four explicit layers:
 
@@ -12,7 +11,12 @@ Use four explicit layers:
 3. Memory Graph Markdown cards are compressed human-readable views.
 4. JSONL indexes are generated caches. Rebuild them from cards and state; do not hand-maintain them.
 
-Cross-project thesis, sector, or event-triggered changes are proposals until reviewed. Store them in `09_待确认更新/`. Store sync and rebuild audit records in `10_运行记录/`.
+Apply clear reusable changes directly to their existing project, sector,
+technical, valuation, thesis, person, or event destination. Ordinary public
+news affecting an existing project belongs in that project card's dated
+`外部动态`. Use the single `待复核.md` only for an important signal with no safe
+destination. Store only the latest successful sync metadata in
+`.system/last-sync.json`; detailed persistent logs are for failures.
 
 ## Portable Context Record
 
@@ -116,6 +120,8 @@ Use stable sector and theme files:
 
 ## 仍需确认
 
+## 外部动态
+
 ## 相似项目
 
 ## 反例项目
@@ -213,6 +219,13 @@ One line per high-signal person who meets the industry-standing threshold. Use `
 
 ## Event Card Markdown
 
+Create an event card only when the event has durable standalone value and
+changes a sector or technical view, a reusable valuation reference, one or more
+active-project priorities, or an investment thesis. Project operating updates,
+datapacks, interviews, and cash-conversion changes stay in the project judgment
+and project card unless they establish a reusable cross-project pattern. There
+is no numeric event quota.
+
 ```markdown
 # 事件卡片｜事件短名
 
@@ -297,11 +310,9 @@ One line per high-signal person who meets the industry-standing threshold. Use `
 
 ## 一级市场可比
 
-### 已成交 / 已融到钱的估值
+### 公司 / 材料 / 公开口径
 
-### 已签署 / 交割中
-
-### 在融报价 / 下一轮目标
+### 深度交易核验（仅在必要时）
 
 ## 商业模式分层
 
@@ -320,17 +331,15 @@ One line per high-signal person who meets the industry-standing threshold. Use `
 ## 最近更新
 ```
 
-Valuation observations must preserve transaction status and source tier.
-Completed/funded valuations are market facts and should normally be retained
-even when the project is expensive, paused, or passed. Signed prices, current
-quotes, and next-round targets remain useful at lower weight, but must not be
-mixed with completed transactions.
-
-For each observation, include the project, date, round, pre/post-money basis,
-amount raised when known, source, operating stage, relevant metric denominator,
-and unusual rights or control/strategic premiums when they affect
-comparability. Keep the internal fair-value range under
-`我们自己的价格纪律`; never present it as a transaction.
+For each useful observation, include the project, date, round or operating
+stage, stated pre/post-money basis when known, amount raised when known, source
+context, relevant maturity or metric denominator, and a short comparability
+note. Do not require agreements, payment proof,工商 changes, or exact closing
+status for routine intake. Add transaction status, unusual rights, secondary
+components, or control/strategic premiums only when they affect ownership,
+portfolio marking, return math, legal or closing risk, source conflict, or the
+investment decision. Keep internal fair value under `我们自己的价格纪律` and
+separate from observed or company-stated market prices.
 
 ## Graph Delta
 
@@ -348,10 +357,11 @@ Use the following reusable-change envelope:
 }
 ```
 
-Use `valuation_proposals` when a valuation observation is decision-useful but
-its destination, transaction status, source conflict, or comparability requires
-review. When the anchor destination and evidence label are clear, update the
-valuation anchor directly and rebuild the indexes.
+Graph deltas are optional advanced or machine-to-machine envelopes, not a
+default local review queue. When the destination and source context are clear,
+apply the reusable change directly and rebuild indexes. If an important change
+has no safe destination, summarize it in the single `待复核.md` rather than
+creating one proposal file per input.
 
 ## Thesis Ledger Markdown
 
@@ -385,8 +395,10 @@ python3 scripts/sync_project.py --workspace-root "<workspace_root>" --state "<st
 ```
 
 Run rebuild and validation after any batch mutation. `sync_project.py` may update
-the project card automatically, but thesis and sector proposals stay in the
-review queue.
+the project card automatically. The optional graph-delta argument is retained
+for compatibility and writes one compact entry to `待复核.md`; normal workflows
+should update clear reusable destinations directly. Successful syncs overwrite
+`.system/last-sync.json` rather than creating timestamped logs.
 
 ## Sector Values
 

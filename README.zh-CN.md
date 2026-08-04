@@ -2,30 +2,31 @@
 
 [English](README.md)
 
-这是一个用于维护私有“投资认知库”的 Codex skill，可以使用本地文件，也可以通过 Adapter 部署为获授权的飞书 Context Registry。
+这是一个用于维护私有“投资认知库”的 Codex skill。默认使用本地文件；获授权的飞书 Context Registry 和跨 Agent 迁移是按需启用的高级能力。
 
 它把新 BP、飞书纪要、datapack、新闻、GitHub 项目、技术主题和估值问题，连接到过去看过的项目、赛道地图、技术观点、估值锚点和持续更新的观点账本。
 
 ## 它能做什么
 
-- 在 AI Work Hub 工作区里初始化本地私有 `Memory Graph/`，或把同一套语义记录映射到飞书 Context Registry。
+- 在 AI Work Hub 工作区里初始化本地私有 `Memory Graph/`。
 - 创建和更新项目卡片、事件卡片、赛道地图、技术主题、估值锚点和观点账本。
 - 只跟踪具备可复用行业地位、学术/技术谱系或操盘记录的高信号人物，不做成通讯录、CRM 或项目团队花名册。
 - 看新项目之前，检索相似项目、反例项目、估值锚点、赛道观点和技术主题。
-- 将 AI科技与宏观事件日报/周报、GitHub 全球项目雷达里的高信号事件沉淀为事件卡片。
+- 将 AI科技与宏观事件日报/周报、GitHub 全球项目雷达里的重要增量写入最合适的项目、赛道、技术、估值、人物、观点或事件文件，不设置机械数量上限。
 - 保持 skill 本身公开可复用，但知识库内容只保存在本地或获授权的组织环境，不上传 GitHub。
-- 导出 `context-package/v1`，供飞书或其他组织 Adapter 幂等写入。
+- 与现有项目直接相关的新闻进入项目卡片 `外部动态`，不再批量生成 `needs_review` 文件，也不自动改写正式投资判断。
+- 只有具有独立、持久决策价值的变化才创建事件卡片；项目经营更新留在项目卡片。
+- 在明确要求组织部署、同步、迁移或跨 Agent handoff 时，导出 `context-package/v1`。
 
-## 存储方式
+## 默认存储与高级部署
 
-- **Local：** Markdown 卡片与可重建 JSONL 索引。
-- **Feishu：** Context Registry 记录与 Drive / Doc 对象材料。
-- **Hybrid：** 指定唯一 Canonical Write Target 和同步状态。
+普通使用默认保存为本地 Markdown 卡片与可重建 JSONL 索引。读取飞书链接不代表切换到飞书存储。
 
-节点、关系和来源 Schema 保持一致，只有 Locator、权限、查询和回写方式不同。详见
-[`context-storage-contract.md`](ai-work-hub-memory-graph/references/context-storage-contract.md)。
+只有用户明确要求 canonical Feishu storage、本地/组织同步、Context Registry、迁移、bridge 或跨 Agent handoff 时，才读取：
 
-导出本地 Graph：
+[`advanced-deployment.md`](ai-work-hub-memory-graph/references/advanced-deployment.md)
+
+高级模式下导出本地 Graph：
 
 ```bash
 python3 ai-work-hub-memory-graph/scripts/export_context_registry.py \
