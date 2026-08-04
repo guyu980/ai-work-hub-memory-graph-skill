@@ -89,10 +89,8 @@ PROJECT_TEMPLATE = """# 项目卡片｜项目名
 - 融资阶段:
 - 估值摘要:
 - 状态文件:
-- 证据账本:
 - 资料来源:
 - 同步哈希:
-- 证据回填状态: complete
 
 ## 一句话
 
@@ -260,17 +258,6 @@ def write_if_missing(path: Path, content: str) -> str:
     return "created"
 
 
-def folder_locator(path: Path, workspace_root: Path) -> dict[str, str]:
-    resolved = path.resolve()
-    try:
-        uri = resolved.relative_to(workspace_root.resolve()).as_posix()
-    except ValueError:
-        # A local deployment profile may point outside the workspace. Portable
-        # exports reject such paths instead of publishing the absolute value.
-        uri = str(resolved)
-    return {"backend": "local", "kind": "folder", "uri": uri}
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -333,34 +320,6 @@ def main() -> int:
     else:
         write_json_atomic(config_path, DEFAULT_CONFIG)
         events.append(f"created {config_path}")
-
-    storage_path = memory_root / "config" / "storage-profile.json"
-    if storage_path.exists():
-        events.append(f"exists  {storage_path}")
-    else:
-        write_json_atomic(storage_path, {
-            "schema_version": "context-storage-profile/v1",
-            "profile": "local",
-            "canonical_write_target": folder_locator(
-                memory_root, workspace_root
-            ),
-            "logical_collections": {
-                "structured_context": folder_locator(
-                    memory_root, workspace_root
-                ),
-                "workflow_outputs": folder_locator(
-                    memory_root, workspace_root
-                ),
-                "actions_outcomes": folder_locator(
-                    memory_root / ".system", workspace_root
-                ),
-                "governance": folder_locator(
-                    memory_root / ".system", workspace_root
-                ),
-                "sources": folder_locator(workspace_root, workspace_root),
-            },
-        })
-        events.append(f"created {storage_path}")
 
     print(f"Memory Graph initialized at: {memory_root}")
     for event in events:

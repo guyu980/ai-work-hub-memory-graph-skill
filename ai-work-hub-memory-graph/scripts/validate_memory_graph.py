@@ -143,7 +143,6 @@ def validate_project_records(
                     source_files: list[Path] = []
                     for source_ref in [
                         state.get("running_judgment_path", ""),
-                        state.get("evidence_ledger_path", ""),
                         *state.get("source_refs", []),
                     ]:
                         source_path = resolve_workspace_path(
@@ -158,46 +157,6 @@ def validate_project_records(
                             errors,
                             state_path,
                             "source_hash is stale; run sync_project.py",
-                        )
-        evidence_value = str(record.get("evidence_ledger_path", "")).strip()
-        if evidence_value:
-            evidence_path = resolve_workspace_path(workspace_root, evidence_value)
-            if not evidence_path or not evidence_path.exists():
-                add_error(
-                    errors,
-                    card_path,
-                    f"evidence ledger missing: {evidence_value}",
-                )
-            else:
-                for item in read_jsonl(evidence_path):
-                    if item.get("evidence_tier") not in config["evidence_tiers"]:
-                        add_error(
-                            errors,
-                            evidence_path,
-                            f"invalid evidence_tier={item.get('evidence_tier')!r}",
-                        )
-                    if item.get("status") not in config["evidence_statuses"]:
-                        add_error(
-                            errors,
-                            evidence_path,
-                            f"invalid status={item.get('status')!r}",
-                        )
-                    if item.get("decision_impact") not in config["decision_impacts"]:
-                        add_error(
-                            errors,
-                            evidence_path,
-                            "invalid decision_impact="
-                            f"{item.get('decision_impact')!r}",
-                        )
-                    if (
-                        item.get("temporal_scope")
-                        not in config["evidence_temporal_scopes"]
-                    ):
-                        add_error(
-                            errors,
-                            evidence_path,
-                            "invalid temporal_scope="
-                            f"{item.get('temporal_scope')!r}",
                         )
     return errors
 

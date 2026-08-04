@@ -1,6 +1,6 @@
 ---
 name: ai-work-hub-memory-graph
-description: Use when a project, BP, Feishu note, transcript, datapack, news item, financing, GitHub project, technical question, sector question, or valuation question should connect to prior investment knowledge. Initializes, retrieves from, updates, rebuilds, and validates a sparse private Memory Graph of project cards, sector maps, technical themes, valuation anchors, durable events, and high-signal people. Integrates with diligence and recurring intelligence without copying every source item into the graph. Taxonomy is user-configurable; organization registries and portable Context Packages are optional advanced modes.
+description: Use when a project, BP, Feishu note, transcript, datapack, news item, financing, GitHub project, technical question, sector question, or valuation question should connect to prior investment knowledge. Initializes, retrieves from, updates, rebuilds, and validates a sparse private Memory Graph of project cards, sector maps, technical themes, valuation anchors, durable events, and high-signal people. Integrates with diligence and recurring intelligence without copying every source item into the graph. Taxonomy is user-configurable.
 ---
 
 # AI Work Hub Memory Graph
@@ -175,10 +175,6 @@ python3 <skill_dir>/scripts/validate_memory_graph.py \
 ```
 
 Successful sync metadata lives only in `.system/last-sync.json`. Detailed workflow run records and failures belong in the relevant archive, not in numbered graph directories.
-
-## Advanced Deployment
-
-Local Markdown and JSONL are the complete default. Read `references/advanced-deployment.md` only when the user explicitly requests organization storage, a Feishu/other Context Registry, hybrid synchronization, migration between runtimes, a bridge, or a portable Context Package.
 
 ## Completion Check
 

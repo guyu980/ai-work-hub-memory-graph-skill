@@ -133,10 +133,6 @@ Daily/weekly intelligence and GitHub radar can also use the graph after their re
 
 Automations may append sourced external news to project cards, but they must not silently change the formal investment decision, participation, position, price view, or confidence.
 
-## Advanced Deployment
-
-Local Markdown and generated JSONL are the default and complete workflow. Organization registries, hybrid storage, bridges, and portable Context Packages are optional and documented in [`advanced-deployment.md`](ai-work-hub-memory-graph/references/advanced-deployment.md).
-
 ## Repository Boundary
 
 This public repository contains workflow instructions, scripts, templates, and schemas only. Never commit real project cards, source materials, private judgments, Feishu tokens, or generated indexes from a live workspace.

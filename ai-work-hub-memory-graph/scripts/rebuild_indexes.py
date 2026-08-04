@@ -175,7 +175,6 @@ def project_records(
             ),
             "source_path": path.relative_to(memory_root).as_posix(),
             "state_path": value_from_fields(fields, "状态文件"),
-            "evidence_ledger_path": value_from_fields(fields, "证据账本"),
             "source_hash": value_from_fields(fields, "同步哈希"),
             "related_projects": related,
             "counterexamples": counterexamples,

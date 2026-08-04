@@ -1,6 +1,6 @@
 # Memory Graph Schema v2
 
-This schema describes the default local graph. Read `advanced-deployment.md` only for explicit organization-storage or cross-runtime requests.
+This schema describes the local Memory Graph.
 
 ## Data Layers
 
@@ -64,10 +64,8 @@ There is no thesis file or thesis index. Reusable views belong in the object tha
 - 融资阶段:
 - 估值摘要:
 - 状态文件:
-- 证据账本:
 - 资料来源:
 - 同步哈希:
-- 证据回填状态: complete / pending / partial
 
 ## 一句话
 ## 公司与产品
@@ -86,12 +84,12 @@ There is no thesis file or thesis index. Reusable views belong in the object tha
 ## 下次触发更新的信号
 ```
 
-The companion diligence skill's `references/evidence-contract.md` defines project state and evidence records. Historical projects use the same schema; preserve the original outcome while current decision fields may change after reopening.
+The companion diligence skill's `references/project-state.md` defines the project state. Historical projects use the same schema; preserve the original outcome while current decision fields may change after reopening.
 
 Generated project record:
 
 ```json
-{"schema_version":2,"type":"project","project_id":"project:Example","name":"Example","aliases":[],"primary_sector":"AI原生应用与工作流","tags":["AI应用"],"project_status":"active","process_stage":"diligence","investment_decision":"continue","recommended_play":"follow","position_size":"small","price_view":"reasonable","confidence":"medium","judgment_display":"继续推进；建议跟投，小仓位","stage":"","valuation":"","source_path":"01_项目卡片/YYYY-MM-DD_Example.md","state_path":"项目/Example/输出文档/Example_项目状态.json","evidence_ledger_path":"项目/Example/解析文本/证据账本.jsonl","related_projects":[],"counterexamples":[],"updated_at":"YYYY-MM-DD","summary":"Compressed current view."}
+{"schema_version":2,"type":"project","project_id":"project:Example","name":"Example","aliases":[],"primary_sector":"AI原生应用与工作流","tags":["AI应用"],"project_status":"active","process_stage":"diligence","investment_decision":"continue","recommended_play":"follow","position_size":"small","price_view":"reasonable","confidence":"medium","judgment_display":"继续推进；建议跟投，小仓位","stage":"","valuation":"","source_path":"01_项目卡片/YYYY-MM-DD_Example.md","state_path":"项目/Example/输出文档/Example_项目状态.json","related_projects":[],"counterexamples":[],"updated_at":"YYYY-MM-DD","summary":"Compressed current view."}
 ```
 
 ## Relationship Index
@@ -236,7 +234,7 @@ Generated person record:
 
 ## Optional Graph Delta
 
-Use only for unresolved advanced handoff; clear updates should go directly to their target Markdown object.
+Use only when a material update has no safe target yet; clear updates should go directly to their target Markdown object.
 
 ```json
 {

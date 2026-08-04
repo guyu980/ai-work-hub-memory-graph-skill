@@ -21,7 +21,7 @@
 
 ```text
 项目原始资料
-  -> 项目状态和聚焦证据
+  -> 持续判断和项目状态
   -> 压缩后的 Markdown 知识对象
   -> 自动生成的 JSONL 检索索引
 ```
@@ -132,10 +132,6 @@ python3 ai-work-hub-memory-graph/scripts/migrate_memory_graph_v2.py \
 AI 日报/周报和 GitHub 雷达也可以在报告完成后更新图谱。更新数量不设固定上限：低信号内容留在归档，真正重要的增量全部按最直接的对象写入。
 
 自动化可以向项目卡片追加带来源的外部新闻，但不能静默修改正式投资判断、参与方式、仓位、价格判断或置信度。
-
-## 高级部署
-
-本地 Markdown 和自动生成的 JSONL 已经构成完整默认工作流。组织级 Registry、混合存储、bridge 和可移植 Context Package 都是可选高级能力，见 [`advanced-deployment.md`](ai-work-hub-memory-graph/references/advanced-deployment.md)。
 
 ## 仓库边界
 

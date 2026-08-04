@@ -73,29 +73,6 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "unknown",
     ],
     "confidence_levels": ["low", "medium", "high"],
-    "evidence_tiers": [
-        "contract_or_original",
-        "customer_confirmed",
-        "public_verified",
-        "company_claim",
-        "inference",
-        "legacy_migrated",
-    ],
-    "evidence_statuses": [
-        "confirmed",
-        "partial",
-        "unverified",
-        "disputed",
-        "stale",
-        "superseded",
-    ],
-    "decision_impacts": ["high", "medium", "low"],
-    "evidence_temporal_scopes": [
-        "decision_time",
-        "post_outcome",
-        "current",
-        "unknown",
-    ],
     "relation_types": [
         "comparable_to",
         "counterexample_of",
@@ -131,10 +108,8 @@ HEADER_LABELS = {
     "stage": "融资阶段",
     "valuation": "估值摘要",
     "state_path": "状态文件",
-    "evidence_ledger_path": "证据账本",
     "source_refs": "资料来源",
     "source_hash": "同步哈希",
-    "evidence_backfill_status": "证据回填状态",
 }
 
 

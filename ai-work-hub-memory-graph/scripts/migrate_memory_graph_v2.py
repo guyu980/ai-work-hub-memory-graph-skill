@@ -302,12 +302,6 @@ def migrate_card(
         if project_dir
         else None
     )
-    evidence_path = (
-        project_dir / "解析文本" / "证据账本.jsonl"
-        if project_dir
-        else None
-    )
-
     source_refs: list[str] = []
     if running_judgment:
         source_refs.append(relative_to_workspace(running_judgment, workspace_root))
@@ -315,7 +309,7 @@ def migrate_card(
         if item not in source_refs:
             source_refs.append(item)
 
-    source_files = [path for path in [running_judgment, evidence_path] if path]
+    source_files = [running_judgment] if running_judgment else []
     for source_ref in source_refs:
         source_path = resolve_workspace_path(workspace_root, source_ref)
         if source_path and source_path.exists():
@@ -350,12 +344,6 @@ def migrate_card(
             else ""
         ),
         "card_path": relative_to_workspace(card_path, memory_root),
-        "evidence_ledger_path": (
-            relative_to_workspace(evidence_path, workspace_root)
-            if evidence_path
-            else ""
-        ),
-        "evidence_backfill_status": "pending",
         "source_hash": source_hash,
         "created_at": created_at,
         "updated_at": updated_at,
@@ -365,9 +353,6 @@ def migrate_card(
 
     if state_path and not dry_run:
         state_path.parent.mkdir(parents=True, exist_ok=True)
-        evidence_path.parent.mkdir(parents=True, exist_ok=True)
-        if not evidence_path.exists():
-            evidence_path.touch()
         if state_path.exists():
             existing = json.loads(state_path.read_text(encoding="utf-8"))
             for key in (
@@ -385,7 +370,6 @@ def migrate_card(
                 "confidence",
                 "blocking_gates",
                 "watch_signals",
-                "evidence_backfill_status",
             ):
                 if existing.get(key):
                     state[key] = existing[key]
@@ -426,10 +410,8 @@ def migrate_card(
             "融资阶段",
             "估值摘要",
             "状态文件",
-            "证据账本",
             "资料来源",
             "同步哈希",
-            "证据回填状态",
         )
         if label in ordered
     ]

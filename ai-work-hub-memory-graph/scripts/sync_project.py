@@ -102,12 +102,6 @@ def main() -> int:
         str(state.get("running_judgment_path", "")),
     )
     source_files = [running] if running else []
-    evidence = workspace_path(
-        workspace_root,
-        str(state.get("evidence_ledger_path", "")),
-    )
-    if evidence:
-        source_files.append(evidence)
     for source_ref in state.get("source_refs", []):
         source_path = resolve_workspace_path(workspace_root, str(source_ref))
         if source_path and source_path.exists():
@@ -145,10 +139,8 @@ def main() -> int:
         "融资阶段",
         "估值摘要",
         "状态文件",
-        "证据账本",
         "资料来源",
         "同步哈希",
-        "证据回填状态",
     ]
     card_path.write_text(
         replace_card_header(
