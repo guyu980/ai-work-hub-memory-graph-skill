@@ -16,7 +16,7 @@ does not trigger this mode.
 
 ## Organization Profile
 
-Read `context-storage-contract.md`. Preserve the same project, event, thesis,
+Read `context-storage-contract.md`. Preserve the same project, sector, technical,
 person, and resource semantics while an adapter resolves locators, permissions,
 queries, and writeback.
 

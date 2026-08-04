@@ -18,16 +18,15 @@ PACKAGE_TYPES = {
 VISIBILITY = {"organization", "organization_core", "project_team", "restricted"}
 ACTOR_TYPES = {"human", "agent", "automation"}
 OBJECT_TYPES = {
-    "project", "event", "report", "thesis", "person",
+    "project", "sector", "technical_theme", "event", "report", "person",
     "decision_snapshot", "capital_resource", "human_capital", "workflow"
 }
 CONTEXT_TYPES = {
-    "project", "event", "report", "thesis", "person",
+    "project", "sector", "technical_theme", "event", "report", "person",
     "decision_snapshot", "resource", "workflow_output"
 }
 RELATION_TYPES = {
-    "comparable_to", "counterexample_of", "supports_thesis",
-    "contradicts_thesis", "linked_person", "affected_by",
+    "comparable_to", "counterexample_of", "linked_person", "affected_by",
     "uses_valuation_anchor"
 }
 BACKENDS = {"local", "feishu", "web", "other"}

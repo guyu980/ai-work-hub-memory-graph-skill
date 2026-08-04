@@ -5,6 +5,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+import shutil
+import subprocess
+import sys
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
@@ -24,6 +28,94 @@ from memory_graph_lib import (
     value_from_fields,
     write_json_atomic,
 )
+
+
+LEGACY_RELATIONS = {"supports_thesis", "contradicts_thesis"}
+
+
+def move_path(source: Path, destination: Path, dry_run: bool) -> str | None:
+    if not source.exists():
+        return None
+    if destination.exists():
+        raise FileExistsError(
+            f"cannot move {source}: destination already exists: {destination}"
+        )
+    if not dry_run:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(source), str(destination))
+    return f"{'would move' if dry_run else 'moved'} {source} -> {destination}"
+
+
+def normalize_sparse_layout(
+    workspace_root: Path,
+    memory_root: Path,
+    dry_run: bool,
+) -> list[str]:
+    archive_root = (
+        workspace_root
+        / "自动化归档"
+        / "Memory Graph历史结构归档"
+        / date.today().isoformat()
+        / "移除观点账本"
+    )
+    actions: list[str] = []
+    moves = [
+        (
+            memory_root / "05_观点账本",
+            archive_root / "05_观点账本",
+        ),
+        (
+            memory_root / "00_索引" / "观点索引.jsonl",
+            archive_root / "观点索引.jsonl",
+        ),
+        (
+            memory_root / "templates" / "观点账本模板.md",
+            archive_root / "观点账本模板.md",
+        ),
+        (
+            memory_root / "06_事件卡片",
+            memory_root / "05_事件卡片",
+        ),
+        (
+            memory_root / "08_人物卡片",
+            memory_root / "06_人物卡片",
+        ),
+    ]
+    for source, destination in moves:
+        action = move_path(source, destination, dry_run)
+        if action:
+            actions.append(action)
+
+    replacements = {
+        "06_事件卡片/": "05_事件卡片/",
+        "08_人物卡片/": "06_人物卡片/",
+        "相关赛道/技术观点": "相关赛道/技术主题",
+    }
+    for path in sorted(memory_root.rglob("*.md")):
+        text = path.read_text(encoding="utf-8")
+        updated = text
+        for old, new in replacements.items():
+            updated = updated.replace(old, new)
+        if updated == text:
+            continue
+        actions.append(
+            f"{'would update' if dry_run else 'updated'} references in {path}"
+        )
+        if not dry_run:
+            path.write_text(updated, encoding="utf-8")
+
+    if actions and not dry_run:
+        archive_root.mkdir(parents=True, exist_ok=True)
+        readme = archive_root / "README.md"
+        if not readme.exists():
+            readme.write_text(
+                "# 观点账本归档\n\n"
+                "本目录保存稀疏结构迁移前的观点账本、索引和模板。"
+                "可复用内容应进入活跃图谱中的赛道地图、技术主题、估值锚点、"
+                "项目卡片或工作流规则；本目录不参与活跃检索。\n",
+                encoding="utf-8",
+            )
+    return actions
 
 
 def relative_to_workspace(path: Path, workspace_root: Path) -> str:
@@ -104,6 +196,30 @@ def normalize_date(value: str, fallback: str) -> str:
     if len(value) >= 10:
         return value[:10]
     return fallback
+
+
+def merge_section_entities(text: str, heading: str, values: list[str]) -> str:
+    clean_values = [str(value).strip() for value in values if str(value).strip()]
+    if not clean_values:
+        return text
+    pattern = re.compile(
+        rf"(?ms)(^## {re.escape(heading)}\s*\n)(.*?)(?=^## |\Z)"
+    )
+    match = pattern.search(text)
+    if not match:
+        suffix = "\n" if text.endswith("\n") else "\n\n"
+        return text + suffix + f"## {heading}\n\n" + "\n".join(
+            f"- {value}" for value in clean_values
+        ) + "\n"
+    body = match.group(2).rstrip()
+    additions = [value for value in clean_values if value not in body]
+    if not additions:
+        return text
+    updated_body = body
+    if updated_body:
+        updated_body += "\n"
+    updated_body += "\n".join(f"- {value}" for value in additions) + "\n\n"
+    return text[: match.start()] + match.group(1) + updated_body + text[match.end() :]
 
 
 def migrate_card(
@@ -318,6 +434,17 @@ def migrate_card(
         if label in ordered
     ]
     migrated_text = replace_card_header(parsed["text"], ordered_fields)
+    if not state_path:
+        migrated_text = merge_section_entities(
+            migrated_text,
+            "相似项目",
+            state["related_projects"],
+        )
+        migrated_text = merge_section_entities(
+            migrated_text,
+            "反例项目",
+            state["counterexamples"],
+        )
     if not dry_run:
         card_path.write_text(migrated_text, encoding="utf-8")
     return state, "linked" if project_dir else "graph_only"
@@ -336,6 +463,11 @@ def main() -> int:
         if args.memory_root
         else workspace_root / "Memory Graph"
     )
+    layout_actions = normalize_sparse_layout(
+        workspace_root,
+        memory_root,
+        args.dry_run,
+    )
     (memory_root / "config").mkdir(parents=True, exist_ok=True)
     config_path = memory_root / "config" / "schema-v2.json"
     merged_config = dict(DEFAULT_CONFIG)
@@ -344,6 +476,11 @@ def main() -> int:
         if not isinstance(loaded_config, dict):
             raise ValueError(f"{config_path} must contain a JSON object")
         merged_config.update(loaded_config)
+    merged_config["relation_types"] = [
+        relation
+        for relation in merged_config.get("relation_types", [])
+        if relation not in LEGACY_RELATIONS
+    ]
     if not args.dry_run:
         write_json_atomic(config_path, merged_config)
 
@@ -368,8 +505,22 @@ def main() -> int:
         f"{'Would migrate' if args.dry_run else 'Migrated'} "
         f"{len(results)} project cards to schema v2"
     )
+    for action in layout_actions:
+        print(f"- {action}")
     for name, status in results:
         print(f"- {name}: {status}")
+    if not args.dry_run:
+        subprocess.run(
+            [
+                sys.executable,
+                str(Path(__file__).with_name("rebuild_indexes.py")),
+                "--workspace-root",
+                str(workspace_root),
+                "--memory-root",
+                str(memory_root),
+            ],
+            check=True,
+        )
     return 0
 
 

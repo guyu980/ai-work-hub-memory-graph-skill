@@ -99,8 +99,6 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "relation_types": [
         "comparable_to",
         "counterexample_of",
-        "supports_thesis",
-        "contradicts_thesis",
         "linked_person",
         "affected_by",
         "uses_valuation_anchor",

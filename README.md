@@ -1,128 +1,146 @@
-# AI Work Hub Memory Graph Skill
+# AI Work Hub Memory Graph
 
 [中文说明](README.zh-CN.md)
 
-A Codex skill for maintaining a sparse private cross-project investment knowledge base. Local files are the default; an authorized Feishu/Lark Context Registry is an optional advanced deployment.
+A Codex skill for building a private, durable memory across investment projects. It connects project diligence, recurring AI intelligence, GitHub radar, sector research, technical themes, valuation evidence, important events, and high-signal people without turning the graph into a second document archive.
 
-It connects new BPs, Feishu notes, datapacks, news items, GitHub projects, technical themes, and valuation questions to prior project cards, sector maps, technical views, valuation anchors, and a running thesis ledger.
+## What It Solves
 
-## What It Does
+When a new project or news item arrives, the workflow can recall:
 
-- Initializes a local private `Memory Graph/` knowledge base.
-- Creates and updates project cards, event cards, sector maps, technical themes, valuation anchors, and thesis entries.
-- Tracks only high-signal people with reusable industry, academic, technical, or operator standing, without becoming a CRM or team roster.
-- Retrieves similar projects, counterexamples, valuation anchors, and sector or technical views before a new project judgment.
-- Post-processes daily/weekly reports and GitHub radar outputs into the most useful project, sector, technical, valuation, people, thesis, or major-event destination, with no mechanical update quota.
-- Keeps the public skill reusable while keeping private investment knowledge in the user's local workspace or authorized organization environment.
-- Writes directly relevant news into project-card `外部动态` without silently changing formal investment decisions.
-- Reserves event cards for changes with durable standalone decision value; project operating updates stay with the project.
-- Exports a portable `context-package/v1` only for explicit advanced deployment or handoff.
+- similar projects and counterexamples;
+- current sector understanding;
+- relevant technical mechanisms and proof standards;
+- valuation references and price discipline;
+- durable external changes;
+- people with reusable industry or technical significance.
 
-## Default Storage And Advanced Deployment
+It then writes only the new knowledge that will improve a later decision.
 
-Normal use stores local Markdown cards plus rebuildable JSONL indexes. Reading a Feishu/Lark source does not switch the graph to Feishu storage.
+## Knowledge Model
 
-Read [`advanced-deployment.md`](ai-work-hub-memory-graph/references/advanced-deployment.md) only for explicit canonical Feishu storage, local/organization synchronization, Context Registry export, migration, bridge, or cross-agent handoff.
-
-In advanced mode, export a local graph for an organization adapter:
-
-```bash
-python3 ai-work-hub-memory-graph/scripts/export_context_registry.py \
-  --workspace-root "$HOME/Documents/AI Work Hub" \
-  --output /tmp/context-registry-package.json
-python3 ai-work-hub-memory-graph/scripts/validate_context_package.py \
-  /tmp/context-registry-package.json
+```text
+Project source files
+  -> project state and focused evidence
+  -> compressed Markdown knowledge objects
+  -> generated JSONL retrieval indexes
 ```
 
-## Quick Install
+Active layout:
 
-Clone the public repo:
+```text
+Memory Graph/
+  00_索引/
+  01_项目卡片/
+  02_赛道地图/
+  03_技术主题/
+  04_估值锚点/
+  05_事件卡片/
+  06_人物卡片/
+  待复核.md
+  .system/
+  config/
+  templates/
+```
+
+There is no separate thesis ledger. Reusable views live in the sector, technical, valuation, project, or workflow-rule object where they will be retrieved.
+
+The sector taxonomy is user-configurable. The skill's defaults are examples, not mandatory classifications.
+
+## Routing Rules
+
+| New information | Store it in |
+| --- | --- |
+| One company's current view or evidence | Project folder and project card |
+| Public news about a known project | Its dated `外部动态` entry |
+| Cross-company market pattern | Sector map |
+| Technical route, bottleneck, or validation method | Technical theme |
+| Useful market or financing price | Valuation anchor |
+| Durable standalone external change | Event card |
+| Independently important person | People card |
+| Important but unresolved destination | One `待复核.md` entry |
+| Duplicate or low-signal detail | Source/report archive only |
+
+## Install From GitHub
 
 ```bash
-mkdir -p ~/Documents/skills-repos
+mkdir -p ~/Documents/skills-repos ~/.codex/skills
 cd ~/Documents/skills-repos
 git clone https://github.com/guyu980/ai-work-hub-memory-graph-skill.git
-cd ai-work-hub-memory-graph-skill
+ln -s "$(pwd)/ai-work-hub-memory-graph-skill/ai-work-hub-memory-graph" \
+  ~/.codex/skills/ai-work-hub-memory-graph
 ```
 
-Link the skill into Codex:
+Initialize a private graph:
 
 ```bash
-mkdir -p ~/.codex/skills
-ln -s "$(pwd)/ai-work-hub-memory-graph" ~/.codex/skills/ai-work-hub-memory-graph
-```
-
-If a skill with that name already exists, back it up first:
-
-```bash
-mv ~/.codex/skills/ai-work-hub-memory-graph ~/.codex/skills/ai-work-hub-memory-graph.backup
-ln -s "$(pwd)/ai-work-hub-memory-graph" ~/.codex/skills/ai-work-hub-memory-graph
-```
-
-Initialize the private knowledge base:
-
-```bash
-python3 ai-work-hub-memory-graph/scripts/init_memory_graph.py \
+python3 ai-work-hub-memory-graph-skill/ai-work-hub-memory-graph/scripts/init_memory_graph.py \
   --workspace-root "$HOME/Documents/AI Work Hub"
 ```
 
-This creates:
-
-```text
-~/Documents/AI Work Hub/Memory Graph/
-```
-
-Do not upload that generated `Memory Graph/` folder to a public repository.
-
-## First Use
-
-Connect a new project to prior knowledge:
-
-```text
-Use $ai-work-hub-memory-graph to connect this BP to prior projects, sector views, technical themes, and valuation anchors.
-```
-
-Initialize or repair the local knowledge base:
-
-```text
-Use $ai-work-hub-memory-graph to initialize my Memory Graph under ~/Documents/AI Work Hub.
-```
-
-Post-process a daily or weekly report:
-
-```text
-Use $ai-work-hub-memory-graph to extract high-signal event cards from this AI科技与宏观事件日报.
-```
-
-Track a high-signal founder, scientist, or technical leader:
-
-```text
-Use $ai-work-hub-memory-graph to add this founder/scientist as a key-person signal only if they have reusable industry standing beyond this one project.
-```
-
-## Updating The Skill
-
-This repo should be the public source of truth for the skill only.
-
-After editing:
+Update the installed skill later with:
 
 ```bash
-git status
-git add ai-work-hub-memory-graph README.md README.zh-CN.md LICENSE .gitignore
-git commit -m "Update memory graph skill"
-git push
+cd ~/Documents/skills-repos/ai-work-hub-memory-graph-skill
+git pull --ff-only
 ```
 
-Users can update with:
+The generated `Memory Graph/` is private workspace data and must not be pushed to this public repository.
+
+## Use It
+
+```text
+Use $ai-work-hub-memory-graph to connect this project to prior projects, sector and technical views, and valuation anchors before updating the graph.
+```
+
+For recurring intelligence:
+
+```text
+Use $ai-work-hub-memory-graph after this report is archived. Keep low-signal items in the report and route only durable increments to the most direct graph object.
+```
+
+## Core Commands
+
+Build a compact context pack:
 
 ```bash
-git pull
+python3 ai-work-hub-memory-graph/scripts/build_context_pack.py \
+  --workspace-root "$HOME/Documents/AI Work Hub" \
+  --query "company sector technology business model"
 ```
 
-## Do Not Commit
+Rebuild and validate:
 
-Do not commit generated local knowledge bases, project materials, Feishu auth state, tokens, private deal notes, company confidential data, private contact details, sensitive personal information, or user-specific local overrides.
+```bash
+python3 ai-work-hub-memory-graph/scripts/rebuild_indexes.py \
+  --workspace-root "$HOME/Documents/AI Work Hub"
+python3 ai-work-hub-memory-graph/scripts/validate_memory_graph.py \
+  --workspace-root "$HOME/Documents/AI Work Hub"
+```
 
-## License
+Normalize an older v2 graph:
 
-MIT. See [`LICENSE`](LICENSE).
+```bash
+python3 ai-work-hub-memory-graph/scripts/migrate_memory_graph_v2.py \
+  --workspace-root "$HOME/Documents/AI Work Hub"
+```
+
+## Integration
+
+The companion [AI Work Hub Diligence](https://github.com/guyu980/ai-work-hub-diligence-skill) skill maintains the project object and investment judgment. This skill handles cross-project retrieval and reusable writeback.
+
+Daily/weekly intelligence and GitHub radar can also use the graph after their reports are complete. There is no fixed write quota: low-signal items stay in the archive, while every material increment is routed to the most direct existing object.
+
+Automations may append sourced external news to project cards, but they must not silently change the formal investment decision, participation, position, price view, or confidence.
+
+## Advanced Deployment
+
+Local Markdown and generated JSONL are the default and complete workflow. Organization registries, hybrid storage, bridges, and portable Context Packages are optional and documented in [`advanced-deployment.md`](ai-work-hub-memory-graph/references/advanced-deployment.md).
+
+## Repository Boundary
+
+This public repository contains workflow instructions, scripts, templates, and schemas only. Never commit real project cards, source materials, private judgments, Feishu tokens, or generated indexes from a live workspace.
+
+Contributions should arrive through pull requests. Repository owners review and merge them.
+
+License: [MIT](LICENSE)

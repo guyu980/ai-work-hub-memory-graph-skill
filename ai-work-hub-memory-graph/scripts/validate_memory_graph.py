@@ -220,10 +220,11 @@ def main() -> int:
     index_names = [
         "项目索引.jsonl",
         "关系索引.jsonl",
+        "赛道索引.jsonl",
+        "技术主题索引.jsonl",
+        "估值索引.jsonl",
         "事件索引.jsonl",
         "人物索引.jsonl",
-        "观点索引.jsonl",
-        "估值索引.jsonl",
     ]
     indexes: dict[str, list[dict[str, Any]]] = {}
     for name in index_names:
@@ -267,12 +268,17 @@ def main() -> int:
                 )
 
     for name, key in [
+        ("赛道索引.jsonl", "sector_id"),
+        ("技术主题索引.jsonl", "theme_id"),
+        ("估值索引.jsonl", "valuation_id"),
         ("事件索引.jsonl", "event_id"),
         ("人物索引.jsonl", "person_id"),
-        ("观点索引.jsonl", "thesis_id"),
-        ("估值索引.jsonl", "valuation_id"),
     ]:
         errors.extend(unique(indexes.get(name, []), key, memory_root / "00_索引" / name))
+        for record in indexes.get(name, []):
+            source_path = memory_root / str(record.get("source_path", ""))
+            if not source_path.is_file():
+                add_error(errors, source_path, f"missing source for {key}")
 
     graph_only = [
         item["name"] for item in projects if not str(item.get("state_path", "")).strip()
@@ -287,7 +293,8 @@ def main() -> int:
         "Validated: "
         f"{len(projects)} projects, "
         f"{len(relations)} relationships, "
-        f"{len(indexes.get('观点索引.jsonl', []))} theses"
+        f"{len(indexes.get('赛道索引.jsonl', []))} sectors, "
+        f"{len(indexes.get('技术主题索引.jsonl', []))} technical themes"
     )
     for warning in warnings:
         print(f"WARNING: {warning}")

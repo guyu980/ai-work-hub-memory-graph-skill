@@ -44,10 +44,11 @@ def append_review_note(
 ) -> Path | None:
     proposals: dict[str, list[Any]] = {}
     for kind in (
-        "valuation_proposals",
-        "thesis_proposals",
-        "sector_proposals",
+        "sector_updates",
+        "technical_theme_updates",
+        "valuation_updates",
         "event_triggers",
+        "person_updates",
     ):
         values = delta.get(kind, [])
         if values:

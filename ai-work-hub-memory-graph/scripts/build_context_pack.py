@@ -31,7 +31,9 @@ def score(record: dict[str, Any], query_tokens: set[str]) -> int:
         "primary_sector": 5,
         "sector": 5,
         "summary": 3,
-        "thesis": 3,
+        "key_variables": 3,
+        "validation_signals": 3,
+        "strong_signals": 3,
         "related_projects": 4,
         "counterexamples": 4,
     }
@@ -94,10 +96,15 @@ def main() -> int:
             query_tokens,
             args.limit,
         ),
-        "theses": select(
-            read_jsonl(index_dir / "观点索引.jsonl"),
+        "sectors": select(
+            read_jsonl(index_dir / "赛道索引.jsonl"),
             query_tokens,
-            args.limit,
+            min(args.limit, 3),
+        ),
+        "technical_themes": select(
+            read_jsonl(index_dir / "技术主题索引.jsonl"),
+            query_tokens,
+            min(args.limit, 3),
         ),
         "events": select(
             read_jsonl(index_dir / "事件索引.jsonl"),

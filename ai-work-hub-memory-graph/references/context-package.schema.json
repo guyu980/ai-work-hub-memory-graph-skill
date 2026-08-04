@@ -26,7 +26,7 @@
       "required": ["object_id", "object_type", "title"],
       "properties": {
         "object_id": {"type": "string", "minLength": 1},
-        "object_type": {"enum": ["project", "event", "report", "thesis", "person", "decision_snapshot", "capital_resource", "human_capital", "workflow"]},
+        "object_type": {"enum": ["project", "sector", "technical_theme", "event", "report", "person", "decision_snapshot", "capital_resource", "human_capital", "workflow"]},
         "title": {"type": "string", "minLength": 1},
         "aliases": {"type": "array", "items": {"type": "string"}},
         "status": {"type": "string"},
@@ -118,7 +118,7 @@
       "type": "object",
       "required": ["relation_type", "target"],
       "properties": {
-        "relation_type": {"enum": ["comparable_to", "counterexample_of", "supports_thesis", "contradicts_thesis", "linked_person", "affected_by", "uses_valuation_anchor"]},
+        "relation_type": {"enum": ["comparable_to", "counterexample_of", "linked_person", "affected_by", "uses_valuation_anchor"]},
         "target": {"type": "string", "minLength": 1}
       },
       "additionalProperties": true
@@ -129,7 +129,7 @@
       "properties": {
         "schema_version": {"const": "context-record/v1"},
         "context_id": {"type": "string", "minLength": 1},
-        "context_type": {"enum": ["project", "event", "report", "thesis", "person", "decision_snapshot", "resource", "workflow_output"]},
+        "context_type": {"enum": ["project", "sector", "technical_theme", "event", "report", "person", "decision_snapshot", "resource", "workflow_output"]},
         "title": {"type": "string", "minLength": 1},
         "summary": {"type": "string"},
         "primary_sector": {"type": "string"},
