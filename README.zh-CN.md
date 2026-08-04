@@ -101,10 +101,10 @@ git pull --ff-only
 
 ## 常用命令
 
-生成精简检索包：
+生成精简排序检索结果：
 
 ```bash
-python3 ai-work-hub-memory-graph/scripts/build_context_pack.py \
+python3 ai-work-hub-memory-graph/scripts/retrieve_memory.py \
   --workspace-root "$HOME/Documents/AI Work Hub" \
   --query "项目 赛道 技术 商业模式"
 ```
@@ -132,6 +132,8 @@ python3 ai-work-hub-memory-graph/scripts/migrate_memory_graph_v2.py \
 AI 日报/周报和 GitHub 雷达也可以在报告完成后更新图谱。更新数量不设固定上限：低信号内容留在归档，真正重要的增量全部按最直接的对象写入。
 
 自动化可以向项目卡片追加带来源的外部新闻，但不能静默修改正式投资判断、参与方式、仓位、价格判断或置信度。
+
+`sync_project.py` 会在首次同步时自动创建项目卡片，并拒绝同一项目出现重复卡片。
 
 ## 仓库边界
 

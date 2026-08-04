@@ -101,10 +101,10 @@ Use $ai-work-hub-memory-graph after this report is archived. Keep low-signal ite
 
 ## Core Commands
 
-Build a compact context pack:
+Retrieve compact ranked matches:
 
 ```bash
-python3 ai-work-hub-memory-graph/scripts/build_context_pack.py \
+python3 ai-work-hub-memory-graph/scripts/retrieve_memory.py \
   --workspace-root "$HOME/Documents/AI Work Hub" \
   --query "company sector technology business model"
 ```
@@ -132,6 +132,8 @@ The companion [AI Work Hub Diligence](https://github.com/guyu980/ai-work-hub-dil
 Daily/weekly intelligence and GitHub radar can also use the graph after their reports are complete. There is no fixed write quota: low-signal items stay in the archive, while every material increment is routed to the most direct existing object.
 
 Automations may append sourced external news to project cards, but they must not silently change the formal investment decision, participation, position, price view, or confidence.
+
+`sync_project.py` creates the first project card when needed and rejects duplicate cards.
 
 ## Repository Boundary
 

@@ -75,18 +75,18 @@ When Memory Graph exists and a project or thematic question is being judged:
 
 1. Rebuild indexes if the Markdown changed or index freshness is uncertain.
 2. Query with the company name, aliases, sector, product, technical route, and relevant business model.
-3. Review the compact context pack.
+3. Review the compact ranked results.
 4. Open the source cards behind useful matches; do not rely only on index summaries.
 5. Return a short connection set: similar projects, counterexamples, sector/technical views, valuation anchors, important people, and what must be different this time.
 
 ```bash
-python3 <skill_dir>/scripts/build_context_pack.py \
+python3 <skill_dir>/scripts/retrieve_memory.py \
   --workspace-root "<workspace_root>" \
   --query "<project, sector, technology, and business-model terms>" \
-  --output /tmp/context-pack.json
+  --output /tmp/memory-retrieval.json
 ```
 
-The context pack is bounded retrieval, not a new knowledge store.
+The retrieval result is temporary query output, not a new knowledge store.
 
 ## Write After A Decision Or Report
 
@@ -164,6 +164,9 @@ python3 <skill_dir>/scripts/sync_project.py \
   --workspace-root "<workspace_root>" \
   --state "<project-state.json>"
 ```
+
+If the project has no card yet, sync creates the first card from the finalized
+state. A second card for the same project is treated as an error.
 
 Rebuild and validate:
 

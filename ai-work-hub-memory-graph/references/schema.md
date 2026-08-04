@@ -232,23 +232,6 @@ Generated person record:
 {"schema_version":2,"type":"person","person_id":"person:...","name":"Person Name","aliases":[],"identity_status":"verified","current_org_role":"","related_projects":[],"primary_sectors":[],"tags":[],"source_tiers":["public"],"source_path":"06_人物卡片/YYYY-MM-DD_Person Name.md","updated_at":"YYYY-MM-DD","summary":"Why this person matters."}
 ```
 
-## Optional Graph Delta
-
-Use only when a material update has no safe target yet; clear updates should go directly to their target Markdown object.
-
-```json
-{
-  "schema_version": 2,
-  "project": "<项目名>",
-  "relations_add": [],
-  "sector_updates": [],
-  "technical_theme_updates": [],
-  "valuation_updates": [],
-  "event_triggers": [],
-  "person_updates": []
-}
-```
-
 ## Operations
 
 ```bash

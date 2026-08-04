@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a deterministic, compact retrieval pack for a diligence question."""
+"""Retrieve compact, ranked Memory Graph matches for a diligence question."""
 
 from __future__ import annotations
 
@@ -88,7 +88,7 @@ def main() -> int:
     )
     query_tokens = tokens(args.query)
     index_dir = memory_root / "00_索引"
-    pack = {
+    result = {
         "schema_version": 2,
         "query": args.query,
         "projects": select(
@@ -124,10 +124,10 @@ def main() -> int:
     }
     if args.output:
         output = Path(args.output).expanduser()
-        write_json_atomic(output, pack)
-        print(f"Wrote context pack: {output}")
+        write_json_atomic(output, result)
+        print(f"Wrote retrieval result: {output}")
     else:
-        print(json.dumps(pack, ensure_ascii=False, indent=2))
+        print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 
 

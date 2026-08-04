@@ -36,38 +36,43 @@ def workspace_path(workspace_root: Path, value: str) -> Path | None:
     return path if path.is_absolute() else workspace_root / path
 
 
-def append_review_note(
-    memory_root: Path,
-    project_name: str,
-    delta: dict[str, Any],
-    timestamp: str,
-) -> Path | None:
-    proposals: dict[str, list[Any]] = {}
-    for kind in (
-        "sector_updates",
-        "technical_theme_updates",
-        "valuation_updates",
-        "event_triggers",
-        "person_updates",
-    ):
-        values = delta.get(kind, [])
-        if values:
-            proposals[kind] = values
-    if not proposals:
-        return None
-    path = memory_root / "待复核.md"
-    if path.exists():
-        existing = path.read_text(encoding="utf-8").rstrip()
-    else:
-        existing = "# 待复核\n\n## 待处理"
-    payload = json.dumps(proposals, ensure_ascii=False, indent=2)
-    section = (
-        f"\n\n### {timestamp} | {project_name}\n\n"
-        "仅在没有安全目标文件时保留；确认后更新对应知识文件并删除本条。\n\n"
-        f"```json\n{payload}\n```\n"
-    )
-    path.write_text(existing + section, encoding="utf-8")
-    return path
+def initial_card_text(state: dict[str, Any]) -> str:
+    name = str(state["name"])
+    summary = str(state.get("summary", "")).strip()
+    return f"""# 项目卡片｜{name}
+
+## 一句话
+
+{summary}
+
+## 公司与产品
+
+## 技术路线
+
+## 客户与商业化
+
+## 团队技术背景
+
+## 估值与融资
+
+## 已验证事实
+
+## 公司/来源自述
+
+## 仍需确认
+
+## 外部动态
+
+## 相似项目
+
+## 反例项目
+
+## 相关赛道/技术主题
+
+## 对投资判断的启发
+
+## 下次触发更新的信号
+"""
 
 
 def main() -> int:
@@ -75,7 +80,6 @@ def main() -> int:
     parser.add_argument("--workspace-root", required=True)
     parser.add_argument("--state", required=True)
     parser.add_argument("--memory-root")
-    parser.add_argument("--graph-delta")
     parser.add_argument("--skip-rebuild", action="store_true")
     args = parser.parse_args()
     workspace_root = Path(args.workspace_root).expanduser().resolve()
@@ -87,10 +91,22 @@ def main() -> int:
     state_path = Path(args.state).expanduser().resolve()
     state = load_json(state_path)
     project_name = str(state["name"])
+    if "/" in project_name or "\\" in project_name:
+        raise ValueError("project name cannot contain path separators; use aliases")
     cards = []
     for card_path in (memory_root / "01_项目卡片").glob("*.md"):
         if project_card_name(parse_markdown(card_path)) == project_name:
             cards.append(card_path)
+    created_card = False
+    if not cards:
+        created_at = str(state.get("created_at") or datetime.now().date().isoformat())
+        card_path = memory_root / "01_项目卡片" / f"{created_at}_{project_name}.md"
+        card_path.parent.mkdir(parents=True, exist_ok=True)
+        if card_path.exists():
+            raise ValueError(f"card path exists but was not recognized: {card_path}")
+        card_path.write_text(initial_card_text(state), encoding="utf-8")
+        cards.append(card_path)
+        created_card = True
     if len(cards) != 1:
         raise ValueError(
             f"expected exactly one card for {project_name}, found {len(cards)}"
@@ -150,14 +166,6 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    review_note = None
-    if args.graph_delta:
-        review_note = append_review_note(
-            memory_root,
-            project_name,
-            load_json(Path(args.graph_delta).expanduser().resolve()),
-            now,
-        )
     system_root = memory_root / ".system"
     system_root.mkdir(parents=True, exist_ok=True)
     log_path = system_root / "last-sync.json"
@@ -169,11 +177,6 @@ def main() -> int:
             "project": project_name,
             "state_path": state_path.relative_to(workspace_root).as_posix(),
             "card_path": card_path.relative_to(memory_root).as_posix(),
-            "review_note_path": (
-                review_note.relative_to(memory_root).as_posix()
-                if review_note
-                else ""
-            ),
             "completed_at": now,
         },
     )
@@ -190,8 +193,8 @@ def main() -> int:
             check=True,
         )
     print(f"Synced {project_name}")
-    if review_note:
-        print(f"Appended unresolved graph delta to: {review_note}")
+    if created_card:
+        print(f"Created project card: {card_path}")
     print(f"Latest sync metadata: {log_path}")
     return 0
 
