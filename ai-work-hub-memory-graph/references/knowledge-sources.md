@@ -9,7 +9,7 @@ Use this contract when a useful source does not belong to one investment project
 | BP, company datapack, company or customer call about one company | `项目/<项目名>/` through Diligence |
 | Formal systematic report with an enduring research object | `行业研究/<主题>/` through Deep Research |
 | Expert interview, meeting, course, podcast, institution note, or thematic material with reusable value | `知识来源/` through this skill |
-| Low-value or disposable input | Keep in the current task only; do not persist it |
+| Low-value or disposable input, or an explicit user request not to save | Keep in the current task only; do not persist it |
 
 Store a source once. Other project, research, and graph files link to its core note or original material rather than copying it.
 
@@ -40,17 +40,18 @@ Store a source once. Other project, research, and graph files link to its core n
 
 ## Analysis Contract
 
-Memory Graph Skill is the default entry point and performs the lightweight source analysis:
+Memory Graph Skill is the default entry point and performs substantive, decision-oriented source analysis. Requests to look, organize, summarize, analyze, or prepare follow-ups still persist a reusable source unless the user explicitly says not to save.
 
 1. Preserve enough source context to understand who said what and when.
-2. For interviews, organize the main questions and answers close to the original wording.
-3. Extract three to seven decision-relevant takeaways, not a paragraph-by-paragraph recap.
-4. Preserve the original link and separate verified facts, source opinions, and unresolved claims.
-5. State what prior understanding was reinforced, revised, or contradicted.
-6. Record reusable implications and the few follow-up questions that matter.
-7. Link any actual graph writeback; do not create one graph card per source.
+2. For interviews, organize the main questions and answers close to the original wording while correcting obvious transcription errors transparently.
+3. Retrieve relevant Memory Graph objects and prior source notes before finalizing the analysis.
+4. Extract three to seven decision-relevant takeaways and explain the technical or commercial mechanisms behind them; do not stop at a paragraph-by-paragraph recap.
+5. Preserve the original link and separate verified facts, source opinions, unresolved claims, and transcription risks.
+6. State what prior understanding was reinforced, revised, or contradicted and which projects or investment themes may be affected.
+7. Record reusable implications and the few follow-up questions that can change a decision.
+8. Link any actual graph writeback; do not create one graph card per source.
 
-Use Diligence only when the source changes the judgment of a specific project. Use Deep Research when external search, cross-source validation, or a systematic thematic report is needed.
+Use Diligence only when the source changes the judgment of a specific project. Bounded public calibration is allowed inside this workflow. Use Deep Research only when the user explicitly requests deep research, a formal systematic report, market sizing, competitive mapping, or broad cross-source validation.
 
 ## Feishu Sources
 

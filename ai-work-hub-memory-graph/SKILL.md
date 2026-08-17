@@ -1,6 +1,6 @@
 ---
 name: ai-work-hub-memory-graph
-description: Use when a project, BP, Feishu note, expert interview, transcript, thematic material, datapack, news item, financing, GitHub project, technical question, sector question, or valuation question should connect to prior investment knowledge. Routes non-project sources, performs lightweight source analysis, and initializes, retrieves from, updates, rebuilds, and validates a sparse private Memory Graph. Integrates with diligence, deep research, and recurring intelligence without copying every source item into the graph. Taxonomy is user-configurable.
+description: Default intake and analysis workflow for any reusable non-project expert interview, Feishu meeting note or transcript, thematic briefing or material, course, podcast, or institution note in AI Work Hub, even when the user only asks to look, organize, summarize, analyze, or prepare follow-up questions and does not explicitly ask to save it. Unless the user explicitly says not to persist, initialize it under `知识来源/`, preserve the original source and transcript, produce a decision-oriented core analysis, retrieve related Memory Graph context, and write back only durable increments. Also use when projects, BPs, datapacks, news, financings, GitHub projects, technical questions, sector questions, or valuation questions should connect to prior investment knowledge. Do not route a single source to Deep Research unless the user explicitly asks for deep research, a formal systematic report, market sizing, or broad external validation.
 ---
 
 # AI Work Hub Memory Graph
@@ -15,6 +15,7 @@ Hard requirements:
 
 - Project folders remain the full source of truth for company-specific material.
 - `知识来源/` is the source-of-truth layer for reusable non-project interviews and thematic materials; it is not a graph card layer.
+- Persistence is the default for reusable non-project sources in AI Work Hub. Use chat-only handling only when the user explicitly says not to save or the input is clearly disposable.
 - Project state JSON owns the current machine-readable decision.
 - Markdown cards are compressed, human-readable knowledge objects.
 - `00_索引/*.jsonl` files are generated caches. Never hand-edit them.
@@ -80,14 +81,16 @@ Do not write the same fact into several new cards. A material event may update a
 
 ## Analyze A Non-Project Source
 
-Memory Graph Skill is the default intake and lightweight analysis workflow for reusable expert interviews and thematic materials. Do not force them through the project investment-decision schema.
+Memory Graph Skill is the default intake and substantive analysis workflow for reusable expert interviews and thematic materials. The analysis should approach diligence quality in evidence discipline and investment usefulness, without forcing the source through a company investment-decision schema or expanding it into a formal industry report.
 
-1. Decide ownership before creating files: one company goes to Diligence; a formal systematic report goes to Deep Research; a reusable standalone source goes to `知识来源/`.
-2. Initialize one source folder and preserve the original file, link, or transcript there.
-3. For Feishu links, retrieve the original transcript or document body. Smart minutes are navigation aids, not the evidence base.
-4. Maintain one `核心整理.md`: source context, main content or questions and answers, three to seven takeaways, facts versus source opinions versus unresolved claims, changed understanding, reusable implications, and focused follow-ups.
-5. Write only material reusable changes to existing project, sector, technical, valuation, durable-event, or high-signal-person objects. It is valid for a source to produce no graph update.
-6. Use Diligence only if the source changes a named project's judgment. Use Deep Research only if external validation or systematic research is needed.
+1. Decide ownership before creating files: one company goes to Diligence; a reusable standalone source goes to `知识来源/`; a formal systematic report goes to Deep Research only when the user explicitly requests that depth.
+2. Treat requests such as “看看”, “整理一下”, “分析一下”, “总结”, or “准备追问” as analysis instructions, not as opt-outs from persistence. Initialize one source folder unless the user explicitly says not to save.
+3. Preserve the original file or link once. For Feishu links, retrieve and store the original transcript or document body; use smart minutes only for navigation and error detection.
+4. Retrieve relevant projects, sector maps, technical themes, valuation anchors, events, people, and prior `知识来源/` notes before finalizing the analysis. Record the useful connections and state whether the source reinforces, revises, or contradicts prior understanding.
+5. Maintain one evolving `核心整理.md` with source context, structured main content or questions and answers, three to seven decision-relevant takeaways, technical or commercial mechanisms, facts versus source opinions versus unresolved claims, contradictions and transcription risks, changed understanding, investment implications, and focused follow-ups. Go materially beyond a meeting recap.
+6. Perform bounded public fact checks inside this workflow when useful for calibrating important claims. Do not auto-escalate to Deep Research because external verification is useful; invoke Deep Research only when the user explicitly asks for deep research, a systematic cross-source report, market sizing, competitive mapping, or another formal research deliverable.
+7. Write only material reusable changes to existing project, sector, technical, valuation, durable-event, or high-signal-person objects. It is valid for a source to produce no graph update, but the durable source note still remains.
+8. Use Diligence only if the source changes a named project's judgment.
 
 Do not create a graph event for each interview or a people card for each participant. Store the source once and link to it from any downstream object.
 
@@ -233,4 +236,6 @@ Before declaring graph work complete, verify:
 5. Generated indexes were rebuilt, not hand-edited.
 6. Validation passed, or the exact failure was reported.
 7. Private workspace content remains outside the public repository.
-8. Non-project sources were stored once, analyzed in one core note, and linked rather than copied.
+8. A reusable non-project source has a real source folder, preserved original link or file, stored original transcript or parsed body when available, and one substantive core note.
+9. The core note records relevant prior-memory connections and clearly distinguishes verified facts, source opinions, unresolved claims, and transcription risks.
+10. Any actual graph writeback is linked from the core note; when no graph update is material, the note says so explicitly.

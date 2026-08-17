@@ -1,4 +1,4 @@
 interface:
   display_name: "AI Work Hub Memory Graph"
-  short_description: "Route sources into durable investment memory"
-  default_prompt: "Use $ai-work-hub-memory-graph to classify this input, organize any reusable non-project source, retrieve prior knowledge, and write back only durable investment learning."
+  short_description: "Persist and analyze reusable investment sources"
+  default_prompt: "Use $ai-work-hub-memory-graph to persist and substantively analyze this reusable source, connect it to prior investment memory, and write back only durable increments."
