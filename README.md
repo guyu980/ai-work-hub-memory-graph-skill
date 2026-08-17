@@ -2,7 +2,7 @@
 
 [中文说明](README.zh-CN.md)
 
-A Codex skill for building a private, durable memory across investment projects. It connects project diligence, recurring AI intelligence, GitHub radar, sector research, technical themes, valuation evidence, important events, and high-signal people without turning the graph into a second document archive.
+A Codex skill for building private, durable investment memory. It accepts project inputs and reusable non-project expert interviews or thematic materials, then connects diligence, recurring AI intelligence, GitHub radar, sector research, technical themes, valuation evidence, important events, and high-signal people without turning the graph into a second document archive.
 
 ## What It Solves
 
@@ -20,11 +20,22 @@ It then writes only the new knowledge that will improve a later decision.
 ## Knowledge Model
 
 ```text
-Project source files
-  -> project state and focused evidence
+Project files / non-project knowledge sources
+  -> project state / one core source note
   -> compressed Markdown knowledge objects
   -> generated JSONL retrieval indexes
 ```
+
+Non-project sources live in a sibling source layer:
+
+```text
+知识来源/
+  专家访谈/YYYY/YYYY-MM-DD_Expert_Topic/
+  主题资料/YYYY/YYYY-MM-DD_Source_Topic/
+  templates/核心整理模板.md
+```
+
+`知识来源/` is not a new graph-card layer and has no generated source index.
 
 Active layout:
 
@@ -52,6 +63,8 @@ The sector taxonomy is user-configurable. The skill's defaults are examples, not
 | New information | Store it in |
 | --- | --- |
 | One company's current view or evidence | Project folder and project card |
+| Reusable expert interview or thematic material not owned by one company | One source folder under `知识来源/` |
+| Formal systematic thematic report | `行业研究/<主题>/`, with only reusable increments written to the graph |
 | Public news about a known project | Its dated `外部动态` entry |
 | Cross-company market pattern | Sector map |
 | Technical route, bottleneck, or validation method | Technical theme |
@@ -76,6 +89,25 @@ Initialize a private graph:
 ```bash
 python3 ai-work-hub-memory-graph-skill/ai-work-hub-memory-graph/scripts/init_memory_graph.py \
   --workspace-root "$HOME/Documents/AI Work Hub"
+```
+
+Initialize the non-project source layer:
+
+```bash
+python3 ai-work-hub-memory-graph-skill/ai-work-hub-memory-graph/scripts/init_knowledge_source.py \
+  --workspace-root "$HOME/Documents/AI Work Hub" \
+  --init-only
+```
+
+Create an expert-interview source:
+
+```bash
+python3 ai-work-hub-memory-graph-skill/ai-work-hub-memory-graph/scripts/init_knowledge_source.py \
+  --workspace-root "$HOME/Documents/AI Work Hub" \
+  --kind expert-interview \
+  --date YYYY-MM-DD \
+  --name "Expert name" \
+  --topic "Interview topic"
 ```
 
 Update the installed skill later with:
@@ -127,7 +159,7 @@ python3 ai-work-hub-memory-graph/scripts/migrate_memory_graph_v2.py \
 
 ## Integration
 
-The companion [AI Work Hub Diligence](https://github.com/guyu980/ai-work-hub-diligence-skill) skill maintains the project object and investment judgment. This skill handles cross-project retrieval and reusable writeback.
+This skill is the default intake for non-project sources and owns lightweight source analysis and routing. The companion [AI Work Hub Diligence](https://github.com/guyu980/ai-work-hub-diligence-skill) skill takes over only when a source changes a specific project judgment. [AI Work Hub Deep Research](https://github.com/guyu980/ai-work-hub-deep-research-skill) takes over when external validation or systematic research is needed.
 
 Daily/weekly intelligence and GitHub radar can also use the graph after their reports are complete. There is no fixed write quota: low-signal items stay in the archive, while every material increment is routed to the most direct existing object.
 

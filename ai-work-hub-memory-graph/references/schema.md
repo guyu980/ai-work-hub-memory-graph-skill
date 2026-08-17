@@ -4,10 +4,11 @@ This schema describes the local Memory Graph.
 
 ## Data Layers
 
-1. `项目/<项目名>/` is the complete source-of-truth layer.
-2. `<项目名>_项目状态.json` is the current machine-readable project decision.
-3. Memory Graph Markdown files are compressed human-readable knowledge objects.
-4. `00_索引/*.jsonl` files are generated retrieval caches.
+1. `项目/<项目名>/` owns company-specific source material and continuing diligence.
+2. `行业研究/<主题>/` owns formal thematic research; `知识来源/` owns reusable non-project interviews and thematic materials.
+3. `<项目名>_项目状态.json` is the current machine-readable project decision.
+4. Memory Graph Markdown files are compressed human-readable knowledge objects.
+5. `00_索引/*.jsonl` files are generated retrieval caches.
 
 Update Markdown and project state first. Rebuild indexes; never edit generated JSONL by hand.
 
@@ -34,6 +35,28 @@ Memory Graph/
 ```
 
 There is no thesis file or thesis index. Reusable views belong in the object that owns the decision context: sector, technical theme, valuation anchor, project/counterexample, or workflow rule.
+
+There is also no knowledge-source card or source index. `知识来源/` is a sibling source layer, not another Memory Graph object type. Graph objects may link to a source's `核心整理.md` or original material.
+
+## Non-Project Knowledge Source
+
+```text
+知识来源/
+  专家访谈/YYYY/YYYY-MM-DD_专家_主题/
+    原始资料/
+    解析文本/
+    YYYY-MM-DD_核心整理.md
+    工作区/                       # optional
+  主题资料/YYYY/YYYY-MM-DD_来源主体_主题/
+    原始资料/
+    解析文本/
+    YYYY-MM-DD_核心整理.md
+    工作区/                       # optional
+```
+
+Each source has one evolving core note. It records source context, main questions and answers or source structure, three to seven takeaways, verified facts, source opinions, unresolved claims, changed understanding, reusable implications, follow-ups, and actual graph writeback.
+
+The source note can exist without any graph writeback. Do not create an event card for every source or a people card for every interview participant. See `references/knowledge-sources.md` for routing and analysis rules.
 
 ## Project Card
 

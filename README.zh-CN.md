@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-这是一个为投资项目建立私有、长期记忆的 Codex skill。它把项目尽调、AI 日报/周报、GitHub 雷达、赛道研究、技术主题、估值信息、重大事件和高信号人物连接起来，但不会把图谱变成第二份材料仓库。
+这是一个为投资工作建立私有、长期记忆的 Codex skill。它接收项目材料，也能整理不专属于单一项目的专家访谈和主题资料，并把项目尽调、AI 日报/周报、GitHub 雷达、赛道研究、技术主题、估值信息、重大事件和高信号人物连接起来，但不会把图谱变成第二份材料仓库。
 
 ## 它解决什么问题
 
@@ -20,11 +20,22 @@
 ## 知识模型
 
 ```text
-项目原始资料
-  -> 持续判断和项目状态
+项目资料 / 非项目知识来源
+  -> 项目持续判断 / 单一核心整理
   -> 压缩后的 Markdown 知识对象
   -> 自动生成的 JSONL 检索索引
 ```
+
+非项目来源单独保存在：
+
+```text
+知识来源/
+  专家访谈/YYYY/YYYY-MM-DD_专家_主题/
+  主题资料/YYYY/YYYY-MM-DD_来源主体_主题/
+  templates/核心整理模板.md
+```
+
+`知识来源/` 是原始资料层，不是新的图谱卡片层，也不生成来源索引。
 
 当前目录：
 
@@ -52,6 +63,8 @@ Memory Graph/
 | 新信息 | 保存位置 |
 | --- | --- |
 | 单个公司的当前判断或证据 | 项目文件夹和项目卡片 |
+| 不专属于单一项目的专家访谈或主题材料 | `知识来源/` 下的单一来源文件夹 |
+| 正式、系统性的主题报告 | `行业研究/<主题>/`，重要增量再写回图谱 |
 | 已知项目的公开新闻 | 项目卡片带日期的 `外部动态` |
 | 跨公司的市场规律 | 赛道地图 |
 | 技术路线、瓶颈或验证方法 | 技术主题 |
@@ -76,6 +89,25 @@ ln -s "$(pwd)/ai-work-hub-memory-graph-skill/ai-work-hub-memory-graph" \
 ```bash
 python3 ai-work-hub-memory-graph-skill/ai-work-hub-memory-graph/scripts/init_memory_graph.py \
   --workspace-root "$HOME/Documents/AI Work Hub"
+```
+
+初始化非项目知识来源层：
+
+```bash
+python3 ai-work-hub-memory-graph-skill/ai-work-hub-memory-graph/scripts/init_knowledge_source.py \
+  --workspace-root "$HOME/Documents/AI Work Hub" \
+  --init-only
+```
+
+新建一条专家访谈：
+
+```bash
+python3 ai-work-hub-memory-graph-skill/ai-work-hub-memory-graph/scripts/init_knowledge_source.py \
+  --workspace-root "$HOME/Documents/AI Work Hub" \
+  --kind expert-interview \
+  --date YYYY-MM-DD \
+  --name "专家姓名" \
+  --topic "访谈主题"
 ```
 
 后续更新：
@@ -127,7 +159,7 @@ python3 ai-work-hub-memory-graph/scripts/migrate_memory_graph_v2.py \
 
 ## 与其他工作流联动
 
-配套的 [AI Work Hub Diligence](https://github.com/guyu980/ai-work-hub-diligence-skill) skill 负责项目原始资料、持续判断和 todo；本 skill 负责跨项目检索和可复用知识写回。
+本 skill 是非项目材料的默认入口，负责轻量整理与知识路由。配套的 [AI Work Hub Diligence](https://github.com/guyu980/ai-work-hub-diligence-skill) skill 只在材料涉及具体项目判断时接手；[AI Work Hub Deep Research](https://github.com/guyu980/ai-work-hub-deep-research-skill) skill 只在需要外部验证或系统研究时接手。
 
 AI 日报/周报和 GitHub 雷达也可以在报告完成后更新图谱。更新数量不设固定上限：低信号内容留在归档，真正重要的增量全部按最直接的对象写入。
 

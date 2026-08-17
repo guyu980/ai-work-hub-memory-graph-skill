@@ -1,4 +1,4 @@
 interface:
   display_name: "AI Work Hub Memory Graph"
-  short_description: "Sparse cross-project investment decision memory"
-  default_prompt: "Use $ai-work-hub-memory-graph to connect this input to prior projects and durable investment knowledge, update only the most useful local graph destinations, and avoid duplicating routine project or report activity."
+  short_description: "Route sources into durable investment memory"
+  default_prompt: "Use $ai-work-hub-memory-graph to classify this input, organize any reusable non-project source, retrieve prior knowledge, and write back only durable investment learning."

@@ -1,6 +1,6 @@
 ---
 name: ai-work-hub-memory-graph
-description: Use when a project, BP, Feishu note, transcript, datapack, news item, financing, GitHub project, technical question, sector question, or valuation question should connect to prior investment knowledge. Initializes, retrieves from, updates, rebuilds, and validates a sparse private Memory Graph of project cards, sector maps, technical themes, valuation anchors, durable events, and high-signal people. Integrates with diligence and recurring intelligence without copying every source item into the graph. Taxonomy is user-configurable.
+description: Use when a project, BP, Feishu note, expert interview, transcript, thematic material, datapack, news item, financing, GitHub project, technical question, sector question, or valuation question should connect to prior investment knowledge. Routes non-project sources, performs lightweight source analysis, and initializes, retrieves from, updates, rebuilds, and validates a sparse private Memory Graph. Integrates with diligence, deep research, and recurring intelligence without copying every source item into the graph. Taxonomy is user-configurable.
 ---
 
 # AI Work Hub Memory Graph
@@ -13,7 +13,8 @@ It is deliberately sparse.
 
 Hard requirements:
 
-- Project folders remain the full source of truth.
+- Project folders remain the full source of truth for company-specific material.
+- `知识来源/` is the source-of-truth layer for reusable non-project interviews and thematic materials; it is not a graph card layer.
 - Project state JSON owns the current machine-readable decision.
 - Markdown cards are compressed, human-readable knowledge objects.
 - `00_索引/*.jsonl` files are generated caches. Never hand-edit them.
@@ -23,30 +24,36 @@ Hard requirements:
 - The local taxonomy belongs to the user. Public defaults are editable starting points.
 - The generated `Memory Graph/` contains private investment context and must not be committed to the public skill repository.
 
-Read `references/schema.md` before creating or changing structured objects.
+Read `references/schema.md` before creating or changing structured objects. Read `references/knowledge-sources.md` when the input may be a non-project source.
 
 ## Active Layout
 
 ```text
-Memory Graph/
-  00_索引/
-    项目索引.jsonl
-    关系索引.jsonl
-    赛道索引.jsonl
-    技术主题索引.jsonl
-    估值索引.jsonl
-    事件索引.jsonl
-    人物索引.jsonl
-  01_项目卡片/
-  02_赛道地图/
-  03_技术主题/
-  04_估值锚点/
-  05_事件卡片/
-  06_人物卡片/
-  待复核.md
-  .system/
-  config/
-  templates/
+<workspace_root>/
+  项目/
+  行业研究/
+  知识来源/
+    专家访谈/
+    主题资料/
+  Memory Graph/
+    00_索引/
+      项目索引.jsonl
+      关系索引.jsonl
+      赛道索引.jsonl
+      技术主题索引.jsonl
+      估值索引.jsonl
+      事件索引.jsonl
+      人物索引.jsonl
+    01_项目卡片/
+    02_赛道地图/
+    03_技术主题/
+    04_估值锚点/
+    05_事件卡片/
+    06_人物卡片/
+    待复核.md
+    .system/
+    config/
+    templates/
 ```
 
 There is no separate thesis ledger. Reusable investment views belong in the sector, technical, valuation, project, or workflow-rule object that will actually retrieve them later.
@@ -58,6 +65,8 @@ Put each material increment in its most direct home:
 | Increment | Destination |
 | --- | --- |
 | Current view or evidence about one company | Project folder and `01_项目卡片/` |
+| Reusable expert interview or thematic source not owned by one company | One source folder under `知识来源/` |
+| Formal systematic thematic report | `行业研究/<主题>/`; route only its reusable delta to the graph |
 | Public news directly affecting a known project | Dated entry in that project card's `外部动态` |
 | Repeated pattern across companies or a market structure view | Existing `02_赛道地图/` file |
 | Technical mechanism, route, benchmark, bottleneck, or validation method | Existing `03_技术主题/` file |
@@ -69,12 +78,25 @@ Put each material increment in its most direct home:
 
 Do not write the same fact into several new cards. A material event may update an existing project, sector, technical, or valuation object without needing its own event card.
 
+## Analyze A Non-Project Source
+
+Memory Graph Skill is the default intake and lightweight analysis workflow for reusable expert interviews and thematic materials. Do not force them through the project investment-decision schema.
+
+1. Decide ownership before creating files: one company goes to Diligence; a formal systematic report goes to Deep Research; a reusable standalone source goes to `知识来源/`.
+2. Initialize one source folder and preserve the original file, link, or transcript there.
+3. For Feishu links, retrieve the original transcript or document body. Smart minutes are navigation aids, not the evidence base.
+4. Maintain one `核心整理.md`: source context, main content or questions and answers, three to seven takeaways, facts versus source opinions versus unresolved claims, changed understanding, reusable implications, and focused follow-ups.
+5. Write only material reusable changes to existing project, sector, technical, valuation, durable-event, or high-signal-person objects. It is valid for a source to produce no graph update.
+6. Use Diligence only if the source changes a named project's judgment. Use Deep Research only if external validation or systematic research is needed.
+
+Do not create a graph event for each interview or a people card for each participant. Store the source once and link to it from any downstream object.
+
 ## Retrieve Before A Decision
 
 When Memory Graph exists and a project or thematic question is being judged:
 
 1. Rebuild indexes if the Markdown changed or index freshness is uncertain.
-2. Query with the company name, aliases, sector, product, technical route, and relevant business model.
+2. Query with the company name, aliases, sector, product, technical route, and relevant business model. Search relevant `知识来源/**/*_核心整理.md` notes as a source layer when they exist.
 3. Review the compact ranked results.
 4. Open the source cards behind useful matches; do not rely only on index summaries.
 5. Return a short connection set: similar projects, counterexamples, sector/technical views, valuation anchors, important people, and what must be different this time.
@@ -150,6 +172,27 @@ python3 <skill_dir>/scripts/init_memory_graph.py \
   --workspace-root "<workspace_root>"
 ```
 
+Initialize the non-project source library:
+
+```bash
+python3 <skill_dir>/scripts/init_knowledge_source.py \
+  --workspace-root "<workspace_root>" \
+  --init-only
+```
+
+Create an expert-interview source:
+
+```bash
+python3 <skill_dir>/scripts/init_knowledge_source.py \
+  --workspace-root "<workspace_root>" \
+  --kind expert-interview \
+  --date YYYY-MM-DD \
+  --name "<expert>" \
+  --topic "<topic>"
+```
+
+Use `--kind thematic-material` for a non-project thematic source and `--with-workspace` only when temporary working files are needed.
+
 Normalize an older v2 graph to the current sparse layout:
 
 ```bash
@@ -190,3 +233,4 @@ Before declaring graph work complete, verify:
 5. Generated indexes were rebuilt, not hand-edited.
 6. Validation passed, or the exact failure was reported.
 7. Private workspace content remains outside the public repository.
+8. Non-project sources were stored once, analyzed in one core note, and linked rather than copied.
