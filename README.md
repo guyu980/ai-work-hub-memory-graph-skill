@@ -17,6 +17,14 @@ When a new project or news item arrives, the workflow can recall:
 
 It then writes only the new knowledge that will improve a later decision.
 
+## Retrieval And Updates
+
+Retrieval searches graph summaries and Markdown bodies, core knowledge-source notes and research reports, then returns bounded one-hop relations. It is lexical, source-backed search: agents expand queries by meaning and read the best matches, rather than assuming an empty keyword result means no prior knowledge.
+
+Important increments rewrite current understanding in the existing object, not just its event history. Project sync refreshes state fields, not prose: update the card body before syncing. Rebuild once per write batch; read-only retrieval does not require a rebuild. No new database or source-card layer is needed.
+
+Keep source analysis substantial where useful, but do not convert every claim into a verification task or every observation into a todo. The skill is model-agnostic.
+
 ## Knowledge Model
 
 ```text
@@ -159,7 +167,7 @@ python3 ai-work-hub-memory-graph/scripts/migrate_memory_graph_v2.py \
 
 ## Integration
 
-This skill is the default intake for non-project sources and owns lightweight source analysis and routing. The companion [AI Work Hub Diligence](https://github.com/guyu980/ai-work-hub-diligence-skill) skill takes over only when a source changes a specific project judgment. [AI Work Hub Deep Research](https://github.com/guyu980/ai-work-hub-deep-research-skill) takes over when external validation or systematic research is needed.
+This skill is the default intake for non-project sources and owns lightweight source analysis and routing. The companion [AI Work Hub Diligence](https://github.com/guyu980/ai-work-hub-diligence-skill) skill takes over only when a source changes a specific project judgment. [AI Work Hub Deep Research](https://github.com/guyu980/ai-work-hub-deep-research-skill) takes over only when the user explicitly requests deep research or a formal systematic report; bounded fact checks stay here.
 
 Daily/weekly intelligence and GitHub radar can also use the graph after their reports are complete. There is no fixed write quota: low-signal items stay in the archive, while every material increment is routed to the most direct existing object.
 

@@ -45,10 +45,10 @@ Memory Graph Skill is the default entry point and performs substantive, decision
 1. Preserve enough source context to understand who said what and when.
 2. For interviews, organize the main questions and answers close to the original wording while correcting obvious transcription errors transparently.
 3. Retrieve relevant Memory Graph objects and prior source notes before finalizing the analysis.
-4. Extract three to seven decision-relevant takeaways and explain the technical or commercial mechanisms behind them; do not stop at a paragraph-by-paragraph recap.
+4. Extract the important takeaways and explain relevant technical or commercial mechanisms; do not stop at a recap or force a fixed count.
 5. Preserve the original link and separate verified facts, source opinions, unresolved claims, and transcription risks.
 6. State what prior understanding was reinforced, revised, or contradicted and which projects or investment themes may be affected.
-7. Record reusable implications and the few follow-up questions that can change a decision.
+7. Record reusable implications and only practical follow-ups that can change a decision. Source attribution alone does not require independent verification, a company audit or a new task. Omit empty sections.
 8. Link any actual graph writeback; do not create one graph card per source.
 
 Use Diligence only when the source changes the judgment of a specific project. Bounded public calibration is allowed inside this workflow. Use Deep Research only when the user explicitly requests deep research, a formal systematic report, market sizing, competitive mapping, or broad cross-source validation.

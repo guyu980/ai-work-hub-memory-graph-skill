@@ -17,6 +17,14 @@
 
 完成判断后，只把未来还能复用的知识增量写回图谱。
 
+## 检索与更新
+
+检索同时覆盖索引摘要、卡片正文、知识来源核心整理和研究报告，并返回适量的一层关联对象。它是基于关键词与原文的检索；agent 会围绕含义展开查询、回读相关材料，不能把某次关键词无结果理解成没有旧知识。
+
+重要变化直接重写现有对象的当前理解，不只追加事件。项目同步脚本只刷新状态字段，正文需先更新；一批写入后统一重建索引，只读检索无需重建。无需增加数据库或知识来源卡片。
+
+有价值的内容充分分析，但不把每条来源观点变成核查任务，也不把每条观察变成 todo。Skill 不绑定特定模型。
+
 ## 知识模型
 
 ```text
@@ -159,7 +167,7 @@ python3 ai-work-hub-memory-graph/scripts/migrate_memory_graph_v2.py \
 
 ## 与其他工作流联动
 
-本 skill 是非项目材料的默认入口，负责轻量整理与知识路由。配套的 [AI Work Hub Diligence](https://github.com/guyu980/ai-work-hub-diligence-skill) skill 只在材料涉及具体项目判断时接手；[AI Work Hub Deep Research](https://github.com/guyu980/ai-work-hub-deep-research-skill) skill 只在需要外部验证或系统研究时接手。
+本 skill 是非项目材料的默认入口，负责轻量整理与知识路由。配套的 [AI Work Hub Diligence](https://github.com/guyu980/ai-work-hub-diligence-skill) skill 只在材料涉及具体项目判断时接手；[AI Work Hub Deep Research](https://github.com/guyu980/ai-work-hub-deep-research-skill) skill 只在用户明确要求深度研究或正式系统报告时接手，普通外部查证在本流程内完成。
 
 AI 日报/周报和 GitHub 雷达也可以在报告完成后更新图谱。更新数量不设固定上限：低信号内容留在归档，真正重要的增量全部按最直接的对象写入。
 
