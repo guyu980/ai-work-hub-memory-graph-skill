@@ -57,6 +57,10 @@ Use Diligence only when the source changes the judgment of a specific project. B
 
 When the source is a Feishu link, follow the available Feishu CLI workflow and retrieve the original transcript or document body. Smart minutes may help navigation but are not a substitute for the original content. Preserve the source link in the core note.
 
+## Public Interviews
+
+For podcasts, public interviews and talks, use [Public Interviews And Discovery](public-interviews.md) for discovery, cross-platform deduplication and transcript handling. These remain ordinary knowledge sources, not a separate library or skill. A user-supplied link enters source analysis directly; recurring discovery requires an authorized task.
+
 ## Writeback Threshold
 
 The source note is durable even when it creates no graph update. Write to Memory Graph only when the source adds a reusable change to an existing project, sector, technical theme, valuation anchor, durable event, or independently important person.

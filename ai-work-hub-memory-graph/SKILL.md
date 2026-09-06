@@ -1,6 +1,6 @@
 ---
 name: ai-work-hub-memory-graph
-description: Analyze and preserve reusable non-project expert interviews and thematic sources, even for a simple look or summary request unless saving is excluded. Retrieve cross-project knowledge and update only durable project, sector, technical, valuation or people insights. A single source does not trigger formal Deep Research without an explicit request.
+description: Analyze and preserve reusable non-project expert interviews, public conversations and thematic sources, even for a simple look or summary request unless saving is excluded. Support authorized discovery in existing intelligence tasks; retrieve prior knowledge and update only durable insights. A single source does not trigger formal Deep Research without an explicit request.
 ---
 
 # AI Work Hub Memory Graph
@@ -28,6 +28,14 @@ Hard requirements:
 - The generated `Memory Graph/` contains private investment context and must not be committed to the public skill repository.
 
 Read `references/schema.md` before creating or changing structured objects. Read `references/knowledge-sources.md` when the input may be a non-project source.
+
+## Public Interviews And Discovery
+
+Read `references/public-interviews.md` for public podcasts, interviews, talks or authorized discovery runs. This skill owns source analysis and knowledge routing, not scheduling. Reuse the user's existing intelligence task when authorized; do not create a new automation just because a source is interesting.
+
+Discover through important people, current questions and a small set of useful channels. Keep personal watchlists in private workspace configuration, not this skill. Screen cheaply, then autonomously analyze worthwhile sources within the authorized run; neither fame nor inclusion in a watchlist is sufficient. Seek counterarguments and useful new directions as well as familiar themes.
+
+Reuse one source note per conversation across platforms. Read the original transcript or available full content, label access and transcription limits, and connect the analysis to prior knowledge. A summary is not a full reading. Only material changes enter the graph; discovery alone needs no new queue, card or index rebuild.
 
 ## Active Layout
 

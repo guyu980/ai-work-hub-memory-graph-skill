@@ -25,6 +25,14 @@ Important increments rewrite current understanding in the existing object, not j
 
 Keep source analysis substantial where useful, but do not convert every claim into a verification task or every observation into a todo. The skill is model-agnostic.
 
+## Public Interviews And Discovery
+
+Public interviews, podcasts and talks use the same source-analysis workflow. In an authorized daily/weekly intelligence task, discover through important people, current questions and useful channels; screen cheaply, then read and analyze worthwhile sources without asking the user to approve each candidate. Original transcripts take priority, and limited access or third-party transcription is stated explicitly.
+
+One conversation gets one source note across platforms. Reports carry the useful findings; only durable changes update existing knowledge objects. Daily discovery can accompany normal news, while a weekly pass catches substantive conversations and compares viewpoints. Neither popularity nor an item quota determines what is saved.
+
+This skill does not schedule itself. Keep personal sources, people and optional questions in private workspace configuration, for example `Memory Graph/config/公开内容关注.md`. Names, topics and cadence are customizable. See the [discovery workflow](ai-work-hub-memory-graph/references/public-interviews.md) for the full contract.
+
 ## Knowledge Model
 
 ```text
@@ -170,6 +178,8 @@ python3 ai-work-hub-memory-graph/scripts/migrate_memory_graph_v2.py \
 This skill is the default intake for non-project sources and owns lightweight source analysis and routing. The companion [AI Work Hub Diligence](https://github.com/guyu980/ai-work-hub-diligence-skill) skill takes over only when a source changes a specific project judgment. [AI Work Hub Deep Research](https://github.com/guyu980/ai-work-hub-deep-research-skill) takes over only when the user explicitly requests deep research or a formal systematic report; bounded fact checks stay here.
 
 Daily/weekly intelligence and GitHub radar can also use the graph after their reports are complete. There is no fixed write quota: low-signal items stay in the archive, while every material increment is routed to the most direct existing object.
+
+For authorized interview discovery, analyze selected sources before writing the report, then batch graph updates after the report is archived. No additional skill, source database or automation is required.
 
 Automations may append sourced external news to project cards, but they must not silently change the formal investment decision, participation, position, price view, or confidence.
 
