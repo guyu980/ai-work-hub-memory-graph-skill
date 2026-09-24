@@ -11,7 +11,10 @@ from pathlib import Path
 from typing import Any
 
 from memory_graph_lib import (
+    content_date,
     first_paragraph,
+    graph_lock,
+    markdown_links,
     parse_markdown,
     project_card_name,
     resolve_workspace_path,
@@ -28,7 +31,7 @@ def stable_id(prefix: str, value: str) -> str:
 
 
 def latest_date(text: str) -> str:
-    values = re.findall(r"\b\d{4}-\d{2}-\d{2}\b", text)
+    values = re.findall(r"(?<!\d)\d{4}-\d{2}-\d{2}(?!\d)", text)
     return max(values) if values else ""
 
 
@@ -84,12 +87,10 @@ def project_records(
         name = str(state.get("name") or project_card_name(parsed))
         aliases = list(state.get("aliases") or split_csv(fields.get("别名")))
         related = list(
-            state.get("related_projects")
-            or section_entities(sections.get("相似项目", ""))
+            state.get("related_projects", section_entities(sections.get("相似项目", "")))
         )
         counterexamples = list(
-            state.get("counterexamples")
-            or section_entities(sections.get("反例项目", ""))
+            state.get("counterexamples", section_entities(sections.get("反例项目", "")))
         )
         record = {
             "schema_version": 2,
@@ -183,17 +184,20 @@ def project_records(
                 or value_from_fields(fields, "最近更新")
             ),
             "summary": str(
-                state.get("summary")
-                or first_paragraph(sections.get("一句话", ""))
+                first_paragraph(sections.get("一句话", "") or sections.get("定位与业务", ""))
+                or state.get("summary", "")
             ),
         }
         projects.append(record)
 
         for target, relation_type in [
-            *((item, "comparable_to") for item in related),
+            *((item, "relates_to") for item in related),
             *((item, "counterexample_of") for item in counterexamples),
         ]:
             canonical = alias_to_name.get(target)
+            if not canonical:
+                # General failure patterns are prose, not invented company nodes.
+                continue
             target_kind = "project" if canonical else "external_entity"
             target_value = canonical or target
             relation_key = f"{name}|{relation_type}|{target_kind}|{target_value}"
@@ -235,16 +239,18 @@ def event_records(memory_root: Path) -> list[dict[str, Any]]:
                 "event_id": stable_id("event", title),
                 "title": title,
                 "date": value_from_fields(fields, "日期"),
+                "updated_at": content_date(parsed),
                 "primary_sector": value_from_fields(fields, "主赛道"),
                 "tags": split_csv(fields.get("标签")),
                 "event_type": value_from_fields(fields, "事件类型"),
                 "impact": value_from_fields(fields, "影响等级"),
-                "source_refs": split_csv(fields.get("来源")),
+                "source_refs": [href for _, href in markdown_links(sections.get("来源", ""))]
+                or split_csv(fields.get("来源")),
                 "source_path": path.relative_to(memory_root).as_posix(),
                 "related_projects": section_entities(
-                    sections.get("影响哪些项目/赛道", "")
+                    sections.get("关联对象", "") or sections.get("影响哪些项目/赛道", "")
                 ),
-                "summary": first_paragraph(sections.get("为什么重要", "")),
+                "summary": first_paragraph(sections.get("当前影响", "") or sections.get("为什么重要", "")),
             }
         )
     return records
@@ -268,9 +274,7 @@ def person_records(memory_root: Path) -> list[dict[str, Any]]:
                 "identity_status": value_from_fields(
                     fields,
                     "身份状态",
-                    default="partial"
-                    if any("pending" in item for item in source_tiers)
-                    else "verified",
+                    default="partial",
                 ),
                 "current_org_role": value_from_fields(fields, "当前机构/角色"),
                 "related_projects": split_csv(fields.get("相关项目")),
@@ -278,7 +282,7 @@ def person_records(memory_root: Path) -> list[dict[str, Any]]:
                 "tags": split_csv(fields.get("标签")),
                 "source_tiers": source_tiers,
                 "source_path": path.relative_to(memory_root).as_posix(),
-                "updated_at": value_from_fields(fields, "最近更新"),
+                "updated_at": content_date(parsed),
                 "summary": first_paragraph(sections.get("一句话", "")),
             }
         )
@@ -298,18 +302,19 @@ def sector_records(memory_root: Path) -> list[dict[str, Any]]:
                 "sector_id": stable_id("sector", name),
                 "title": name,
                 "primary_sector": name,
-                "tags": [],
+                "tags": split_csv(parsed["fields"].get("标签")),
+                "aliases": split_csv(parsed["fields"].get("别名")),
                 "summary": compact_text(sections.get("当前判断", "")),
                 "strong_signals": compact_entities(
                     sections.get("强信号", "")
                 ),
                 "related_projects": section_entities(
-                    sections.get("已看项目", "")
+                    sections.get("项目入口", "") or sections.get("已看项目", "")
                 ),
                 "counterexamples": section_entities(
                     sections.get("代表性反例", "")
                 ),
-                "updated_at": latest_date(parsed["text"]),
+                "updated_at": content_date(parsed),
                 "source_path": path.relative_to(memory_root).as_posix(),
             }
         )
@@ -328,7 +333,8 @@ def technical_theme_records(memory_root: Path) -> list[dict[str, Any]]:
                 "type": "technical_theme",
                 "theme_id": stable_id("technical-theme", title),
                 "title": title,
-                "tags": [],
+                "tags": split_csv(parsed["fields"].get("标签")),
+                "aliases": split_csv(parsed["fields"].get("别名")),
                 "summary": compact_text(sections.get("当前理解", "")),
                 "key_variables": compact_text(
                     sections.get("技术路线与关键变量", "")
@@ -337,9 +343,9 @@ def technical_theme_records(memory_root: Path) -> list[dict[str, Any]]:
                     sections.get("可验证信号", "")
                 ),
                 "related_projects": section_entities(
-                    sections.get("相关项目", "")
+                    sections.get("关联项目与研究", "") or sections.get("相关项目", "")
                 ),
-                "updated_at": latest_date(parsed["text"]),
+                "updated_at": content_date(parsed),
                 "source_path": path.relative_to(memory_root).as_posix(),
             }
         )
@@ -358,13 +364,83 @@ def valuation_records(memory_root: Path) -> list[dict[str, Any]]:
                 "valuation_id": stable_id("valuation", sector),
                 "sector": sector,
                 "source_path": path.relative_to(memory_root).as_posix(),
-                "updated_at": latest_date(parsed["text"]),
+                "updated_at": content_date(parsed),
                 "summary": compact_text(
-                    parsed["sections"].get("我们自己的价格纪律", "")
+                    parsed["sections"].get("适用边界", "")
+                    or parsed["sections"].get("我们自己的价格纪律", "")
                 ),
             }
         )
     return records
+
+
+def record_id(record: dict[str, Any]) -> str:
+    return next((str(value) for key, value in record.items() if key.endswith("_id")), "")
+
+
+def linked_relations(workspace: Path, memory_root: Path,
+                     outputs: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    records = [r for name, values in outputs.items() if name != "关系索引.jsonl" for r in values]
+    by_path = {(memory_root / r["source_path"]).resolve(): r for r in records}
+    sectors = {r.get("title"): r for r in records if r["type"] == "sector"}
+    result = []
+    for record in records:
+        source = memory_root / record["source_path"]
+        text = source.read_text(encoding="utf-8")
+        targets = []
+        for line in text.splitlines():
+            for _, href in markdown_links(line):
+                if "://" in href or href.startswith("#"):
+                    continue
+                path = (source.parent / href.split("#", 1)[0]).resolve()
+                target = by_path.get(path)
+                if not target and path.is_relative_to(workspace / "知识来源") and path.name.endswith("核心整理.md") and path.is_file():
+                    target = {"type": "knowledge_source", "source_id": stable_id("source", path.relative_to(workspace).as_posix()),
+                              "title": parse_markdown(path)["title"], "source_path": path.relative_to(workspace).as_posix()}
+                if target:
+                    targets.append((target, compact_text(line, 360)))
+        if record.get("primary_sector") in sectors and record["type"] != "sector":
+            targets.append((sectors[record["primary_sector"]], "主赛道"))
+        for target, context in targets:
+            if record_id(record) == record_id(target):
+                continue
+            relation = {"sector": "belongs_to", "person": "linked_person", "event": "affected_by",
+                        "valuation_anchor": "uses_valuation_anchor", "knowledge_source": "draws_from"}.get(target["type"], "relates_to")
+            key = f"{record_id(record)}|{relation}|{record_id(target)}"
+            result.append({"schema_version": 2, "type": "relationship", "relation_id": stable_id("relation", key),
+                           "from_kind": record["type"], "from_id": record_id(record),
+                           "from_name": record.get("name", record.get("title", record.get("sector", ""))),
+                           "relation_type": relation, "to_kind": target["type"], "to_id": record_id(target),
+                           "to_name": target.get("name", target.get("title", target.get("sector", ""))),
+                           "source_path": record["source_path"], "target_path": target["source_path"],
+                           "context": context, "updated_at": record.get("updated_at", "")})
+    return result
+
+
+def build_outputs(workspace_root: Path, memory_root: Path) -> dict[str, list[dict[str, Any]]]:
+    workspace_root, memory_root = workspace_root.resolve(), memory_root.resolve()
+    projects, relations = project_records(workspace_root, memory_root)
+    outputs = {
+        "项目索引.jsonl": projects,
+        "关系索引.jsonl": relations,
+        "赛道索引.jsonl": sector_records(memory_root),
+        "技术主题索引.jsonl": technical_theme_records(memory_root),
+        "估值索引.jsonl": valuation_records(memory_root),
+        "事件索引.jsonl": event_records(memory_root),
+        "人物索引.jsonl": person_records(memory_root),
+    }
+    relations.extend(linked_relations(workspace_root, memory_root, outputs))
+    outputs["关系索引.jsonl"] = list({r["relation_id"]: r for r in relations}.values())
+    return outputs
+
+
+def rebuild(workspace_root: Path, memory_root: Path, dry_run: bool = False) -> dict[str, int]:
+    with graph_lock(memory_root):
+        outputs = build_outputs(workspace_root, memory_root)
+        for name, records in outputs.items():
+            if not dry_run:
+                write_jsonl_atomic(memory_root / "00_索引" / name, records)
+        return {name: len(records) for name, records in outputs.items()}
 
 
 def main() -> int:
@@ -380,23 +456,11 @@ def main() -> int:
         else workspace_root / "Memory Graph"
     )
 
-    projects, relations = project_records(workspace_root, memory_root)
-    outputs = {
-        "项目索引.jsonl": projects,
-        "关系索引.jsonl": relations,
-        "赛道索引.jsonl": sector_records(memory_root),
-        "技术主题索引.jsonl": technical_theme_records(memory_root),
-        "估值索引.jsonl": valuation_records(memory_root),
-        "事件索引.jsonl": event_records(memory_root),
-        "人物索引.jsonl": person_records(memory_root),
-    }
-    for name, records in outputs.items():
+    for name, count in rebuild(workspace_root, memory_root, args.dry_run).items():
         path = memory_root / "00_索引" / name
-        if not args.dry_run:
-            write_jsonl_atomic(path, records)
         print(
             f"{'would write' if args.dry_run else 'wrote'} "
-            f"{len(records):>3} records -> {path}"
+            f"{count:>3} records -> {path}"
         )
     return 0
 

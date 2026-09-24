@@ -4,12 +4,18 @@
 from __future__ import annotations
 
 import hashlib
+import fcntl
 import json
+import os
 import re
 import tempfile
+import threading
 import unicodedata
+from contextlib import contextmanager
+from datetime import date
 from pathlib import Path
 from typing import Any, Iterable
+from urllib.parse import unquote
 
 
 SCHEMA_VERSION = 2
@@ -79,6 +85,9 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "linked_person",
         "affected_by",
         "uses_valuation_anchor",
+        "belongs_to",
+        "relates_to",
+        "draws_from",
     ],
 }
 
@@ -119,21 +128,80 @@ def load_config(memory_root: Path) -> dict[str, Any]:
     if config_path.exists():
         loaded = json.loads(config_path.read_text(encoding="utf-8"))
         config.update(loaded)
+    config["relation_types"] = list(dict.fromkeys(
+        [*DEFAULT_CONFIG["relation_types"], *config["relation_types"]]
+    ))
     return config
 
 
-def write_json_atomic(path: Path, payload: Any) -> None:
+_LOCK = threading.RLock()
+_HELD: set[Path] = set()
+
+
+@contextmanager
+def graph_lock(memory_root: Path):
+    """Serialize short write batches across processes; nested rebuilds reuse the lock."""
+    path = memory_root.resolve() / ".system" / "write.lock"
+    with _LOCK:
+        if path in _HELD:
+            yield
+            return
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a+") as handle:
+            fcntl.flock(handle, fcntl.LOCK_EX)
+            _HELD.add(path)
+            try:
+                yield
+            finally:
+                _HELD.remove(path)
+                fcntl.flock(handle, fcntl.LOCK_UN)
+
+
+def write_text_atomic(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists() and path.read_text(encoding="utf-8") == content:
+        return
+    temp_path = None
+    try:
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=path.parent,
+                                         delete=False) as handle:
+            temp_path = Path(handle.name)
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        temp_path.replace(path)
+    finally:
+        if temp_path and temp_path.exists():
+            temp_path.unlink()
+
+
+def content_hash(path: Path) -> str | None:
+    return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
+
+
+def content_date(parsed: dict[str, Any]) -> str:
+    """Use knowledge dates, never a future milestone or the file's mtime."""
+    fields = parsed["fields"]
+    for key in ("内容截至", "最近更新", "日期"):
+        value = fields.get(key, "")[:10]
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+            date.fromisoformat(value)
+            return value
+    # Legacy fallback is deliberately limited to explicitly dated updates.
+    values = re.findall(r"(?:截至|更新[：: ]*|补充[：: ]*)[（( ]*(\d{4}-\d{2}-\d{2})", parsed["text"])
+    return max((v for v in values if v <= date.today().isoformat()), default="")
+
+
+def markdown_links(text: str) -> list[tuple[str, str]]:
+    """Read the inline link subset used by graph cards, including spaced paths."""
+    pattern = r"(?<!!)\[([^\]\n]+)\]\((?:<([^>\n]+)>|([^()\n]*(?:\([^()\n]*\)[^()\n]*)*))\)"
+    return [(m.group(1), unquote(m.group(2) or m.group(3)))
+            for m in re.finditer(pattern, text)]
+
+
+def write_json_atomic(path: Path, payload: Any) -> None:
     text = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
-    with tempfile.NamedTemporaryFile(
-        "w",
-        encoding="utf-8",
-        dir=path.parent,
-        delete=False,
-    ) as handle:
-        handle.write(text)
-        temp_path = Path(handle.name)
-    temp_path.replace(path)
+    write_text_atomic(path, text)
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -165,15 +233,7 @@ def write_jsonl_atomic(path: Path, records: Iterable[dict[str, Any]]) -> None:
     content = "\n".join(lines)
     if content:
         content += "\n"
-    with tempfile.NamedTemporaryFile(
-        "w",
-        encoding="utf-8",
-        dir=path.parent,
-        delete=False,
-    ) as handle:
-        handle.write(content)
-        temp_path = Path(handle.name)
-    temp_path.replace(path)
+    write_text_atomic(path, content)
 
 
 def slugify(value: str) -> str:
@@ -244,6 +304,7 @@ def parse_markdown(path: Path) -> dict[str, Any]:
 
 
 def first_paragraph(text: str) -> str:
+    text = re.sub(r"^#{1,6}\s+.*$", "", text, flags=re.MULTILINE)
     paragraphs = [
         re.sub(r"\s+", " ", part).strip()
         for part in re.split(r"\n\s*\n", text.strip())
@@ -259,7 +320,8 @@ def section_entities(text: str) -> list[str]:
         if not line.startswith("- "):
             continue
         value = line[2:].strip()
-        value = re.split(r"[:：]", value, maxsplit=1)[0].strip()
+        links = markdown_links(value)
+        value = links[0][0] if links else re.split(r"[:：]", value, maxsplit=1)[0].strip()
         if value and value not in entities:
             entities.append(value)
     return entities
@@ -430,7 +492,7 @@ def replace_card_header(
     header_lines.extend(
         f"- {label}: {value}"
         for label, value in ordered_fields
-        if str(value).strip()
+        if str(value).strip() and str(value).strip() != "[]"
     )
     return "\n".join([*header_lines, "", *body]).rstrip() + "\n"
 

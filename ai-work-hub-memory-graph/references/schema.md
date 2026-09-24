@@ -1,270 +1,88 @@
-# Memory Graph Schema v2
+# Memory Graph Content Contract
 
-This schema describes the local Memory Graph.
+## Ownership
 
-## Data Layers
+Project materials and the one running judgment own company detail; project state JSON owns the current machine-readable decision. Knowledge-source core notes own original non-project analysis. Research reports and intelligence archives own their full deliverables. Graph Markdown holds reusable synthesis, and JSONL files are rebuildable caches.
 
-1. `项目/<项目名>/` owns company-specific source material and continuing diligence.
-2. `行业研究/<主题>/` owns formal thematic research; `知识来源/` owns reusable non-project interviews and thematic materials.
-3. `<项目名>_项目状态.json` is the current machine-readable project decision.
-4. Memory Graph Markdown files are compressed human-readable knowledge objects.
-5. `00_索引/*.jsonl` files are generated retrieval caches.
+Keep the existing 01–06 folders. No parallel thesis ledger, Evidence Ledger, source-card layer or relationship database. Local taxonomy, names and investment preferences belong to private configuration, not this public Skill.
 
-Update Markdown and project state first. Rebuild indexes; never edit generated JSONL by hand.
+## Shared Conventions
 
-## Paths
+- One object per subject and decision question. Reuse its filename; split only when questions have genuinely different mechanisms. Keep an old entry as a short linked overview when needed for compatibility.
+- Non-project objects use `内容截至: YYYY-MM-DD`, optional aliases and tags. This is the newest information actually incorporated, not migration time, file mtime, source publication date or a future milestone. A source being reread does not make its facts newly verified.
+- Start with current understanding; rewrite it on a material change. Keep only meaningful turning points, not a daily append log. Preserve original detail at its owning source.
+- Omit empty or inapplicable sections. Source attribution belongs next to the relevant fact; avoid duplicating a subject in separate “verified” and “company claim” narratives.
+- Use ordinary relative Markdown links. On substantive analogies, explain the relationship and where it fails. A link is relevance, not corroboration.
+- Selected operating metrics carry period, unit and actual/forecast/source labels. Do not turn this into claim-by-claim bookkeeping.
+- Dates and historical prices remain historical unless a new observation replaces them. Do not refresh all numbers merely to reorganize a page.
 
-```text
-Memory Graph/
-  00_索引/
-    项目索引.jsonl
-    关系索引.jsonl
-    赛道索引.jsonl
-    技术主题索引.jsonl
-    估值索引.jsonl
-    事件索引.jsonl
-    人物索引.jsonl
-  01_项目卡片/YYYY-MM-DD_项目名.md
-  02_赛道地图/赛道名.md
-  03_技术主题/主题名.md
-  04_估值锚点/赛道名.md
-  05_事件卡片/YYYY-MM-DD_事件短名.md
-  06_人物卡片/YYYY-MM-DD_姓名.md
-  待复核.md
-  .system/last-sync.json
-```
+## Six Object Types
 
-There is no thesis file or thesis index. Reusable views belong in the object that owns the decision context: sector, technical theme, valuation anchor, project/counterexample, or workflow rule.
+| Object | Reader's question | Normal sections |
+| --- | --- | --- |
+| Project | What is this business, what is the current view, and what generalizes? | 一句话; 持续判断; 关键事实与判断变量; 可复用认识; 关联与类比; 更新信号; optional 外部动态 |
+| Sector | Where is value captured, across which subdirections? | 当前判断; 子方向与经济机制; 机会与反对理由; 变化与后续信号; 项目入口; 估值入口; 主要来源 |
+| Technical theme | How does this mechanism work and when does it matter? | 当前理解; 技术路线与关键变量; 支持与反对材料; 商业化映射; 关联对象; 会改变判断的新信号; 主要来源 |
+| Valuation | Which observed prices are comparable, on which denominator? | 适用边界; instrument-grouped tables; 使用原则; 本地项目 |
+| Event | Which durable external change affects decisions? | 事件与当前状态; 当前影响; optional 关键转折; 关联对象; 后续信号; 来源 |
+| Person | Why does this person matter beyond one project? | 一句话; 身份与关键贡献; 重要观点与判断价值; 关联对象; 信息边界; 来源 |
 
-There is also no knowledge-source card or source index. `知识来源/` is a sibling source layer, not another Memory Graph object type. Graph objects may link to a source's `核心整理.md` or original material.
+Headings may adapt to the subject; stable meaning matters more than filling a template.
 
-## Non-Project Knowledge Source
+## Project Projection
 
-```text
-知识来源/
-  专家访谈/YYYY/YYYY-MM-DD_专家_主题/
-    原始资料/
-    解析文本/
-    YYYY-MM-DD_核心整理.md
-    工作区/                       # optional
-  主题资料/YYYY/YYYY-MM-DD_来源主体_主题/
-    原始资料/
-    解析文本/
-    YYYY-MM-DD_核心整理.md
-    工作区/                       # optional
-```
+The compact synchronized header contains `Schema Version: 2`, project ID, creation/update dates, sector, useful tags/aliases, status, current decision display, state path and source hash. Full source arrays, stage/participation/price enums and transaction calculations stay in state or the project judgment, not repeated in the card header.
 
-Each source has one evolving core note. It records source context, main questions and answers or source structure, three to seven takeaways, verified facts, source opinions, unresolved claims, changed understanding, reusable implications, follow-ups, and actual graph writeback.
+The generated index still exposes state enums for machine consumers. Existing v2 state files remain compatible. Sync does not synthesize analysis: refresh the header from finalized state, then reread and prepare the prose batch from the current judgment. A source hash is not proof that prose is current.
 
-The source note can exist without any graph writeback. Do not create an event card for every source or a people card for every interview participant. See `references/knowledge-sources.md` for routing and analysis rules.
+Keep business positioning distinct from the latest transaction or fund task. Detailed clauses, budgets, portfolio math and customer-by-customer reconciliations remain in project papers. Sector and valuation pages link current project decisions instead of duplicating their price or participation thresholds.
 
-## Project Card
+Archived project background can remain useful, but date it as historical and do not present its old investment recommendation as current. External news identifies the affected assumption and whether reassessment is useful; it never silently changes formal status or decision.
 
-```markdown
-# 项目卡片｜项目名
+## Valuation Observations
 
-- Schema Version: 2
-- 项目 ID: project:项目名
-- 创建日期:
-- 最近更新:
-- 最近同步:
-- 主赛道:
-- 标签:
-- 别名: []
-- 资料模式: live / historical_review
-- 历史结果: not_applicable / invested / pass / unknown
-- 复盘状态: not_applicable / pending / in_progress / reviewed / refresh_due
-- 历史决策日期:
-- 复盘基准日:
-- 项目状态: active / archived
-- 流程阶段: screening / diligence / ic / closing / monitoring / archived
-- 投资判断: invest / continue / pause / pass / observe / invested
-- 建议打法: lead / co_lead / follow / small_option / none / tbd
-- 仓位: standard / small / symbolic / tbd
-- 价格判断: cheap / reasonable / expensive / unacceptable / unknown
-- 判断置信度: low / medium / high
-- 当前投资判断:
-- 融资阶段:
-- 估值摘要:
-- 状态文件:
-- 资料来源:
-- 同步哈希:
+Use the same columns across pages:
 
-## 一句话
-## 公司与产品
-## 技术路线
-## 客户与商业化
-## 团队技术背景
-## 估值与融资
-## 已验证事实
-## 公司/来源自述
-## 仍需确认
-## 外部动态
-## 相似项目
-## 反例项目
-## 相关赛道/技术主题
-## 对投资判断的启发
-## 下次触发更新的信号
-```
+| Object | Observation date / round | Price and basis | Financing / consideration | Operating denominator / period | Comparability and attribution | Source |
+| --- | --- | --- | --- | --- | --- | --- |
 
-The companion diligence skill's `references/project-state.md` defines the project state. Historical projects use the same schema; preserve the original outcome while current decision fields may change after reopening.
+Group equity financing, public-market observations, M&A/licensing, and debt separately. Mark pre/post-money, EV/equity and currencies when known. Keep financing-only news in the report unless it has reusable context. Operating data without a matched price can have a clearly labeled non-valuation section.
 
-Generated project record:
+Company/interview/datapack prices are valid attributed screening inputs. Unknown fields remain unknown. Do not ask for agreements or payment evidence just to complete the table. Investigate only a material uncertainty for the actual investment or transaction question.
+
+## Generated Relations And Retrieval
+
+Relationships derive from explicit Markdown links plus project state membership and related-project fields. Supported types: `relates_to`, `comparable_to`, `counterexample_of`, `belongs_to`, `linked_person`, `affected_by`, `uses_valuation_anchor`, `draws_from`.
+
+A project relationship is not automatically a financial comparable. Abstract failure patterns stay prose, not fabricated external companies. Unmodeled public companies remain source references; no forced card creation. Links to knowledge-source core notes can be indexed as source relationships without a new source-card directory.
+
+Retrieval searches fresh graph text, core source notes, reports, running project judgments and structured GitHub radar candidates. The limit is across direct results, not per type; neighbors are ranked and bounded to one hop. Read the matched source and its as-of date before reasoning from it. Lexical search can miss synonyms: reformulate or use targeted full-text search, without adding a new database by default.
+
+## Safe Writeback
+
+Use `scripts/write_graph.py` for graph content batches. Prepare content outside active graph folders; record the original SHA-256 while reading. The manifest contains:
 
 ```json
-{"schema_version":2,"type":"project","project_id":"project:Example","name":"Example","aliases":[],"primary_sector":"AI原生应用与工作流","tags":["AI应用"],"project_status":"active","process_stage":"diligence","investment_decision":"continue","recommended_play":"follow","position_size":"small","price_view":"reasonable","confidence":"medium","judgment_display":"继续推进；建议跟投，小仓位","stage":"","valuation":"","source_path":"01_项目卡片/YYYY-MM-DD_Example.md","state_path":"项目/Example/输出文档/Example_项目状态.json","related_projects":[],"counterexamples":[],"updated_at":"YYYY-MM-DD","summary":"Compressed current view."}
+{"changes":[{"path":"03_技术主题/Example.md","expected_sha256":null,"content_file":"/private/staging/Example.md"}]}
 ```
 
-## Relationship Index
-
-Relationships are generated from project-card links. An unresolved public comparable remains an `external_entity`; do not pretend it is a local project.
-
-```json
-{"schema_version":2,"type":"relationship","relation_id":"relation:...","from_kind":"project","from_id":"project:A","from_name":"A","relation_type":"comparable_to","to_kind":"project","to_id":"project:B","to_name":"B","source_path":"01_项目卡片/...","updated_at":"YYYY-MM-DD"}
-```
-
-Allowed relation types:
-
-- `comparable_to`
-- `counterexample_of`
-- `linked_person`
-- `affected_by`
-- `uses_valuation_anchor`
-
-## Sector Map
-
-```markdown
-# 赛道地图｜赛道名
-
-## 当前判断
-## 子方向
-## 强信号
-## 弱信号 / 伪命题
-## 已看项目
-## 代表性反例
-## 估值锚点
-## 最近改变判断的事件
-## 下一步想找的机会
-```
-
-Generated sector record:
-
-```json
-{"schema_version":2,"type":"sector","sector_id":"sector:...","title":"赛道名","primary_sector":"赛道名","tags":[],"summary":"当前判断","strong_signals":[],"related_projects":[],"counterexamples":[],"updated_at":"YYYY-MM-DD","source_path":"02_赛道地图/赛道名.md"}
-```
-
-## Technical Theme
-
-```markdown
-# 技术主题｜主题名
-
-## 当前理解
-## 技术路线与关键变量
-## 商业化映射
-## 可验证信号
-## 常见风险
-## 相关项目
-## 相关事件
-## 会改变判断的新信号
-```
-
-Generated technical-theme record:
-
-```json
-{"schema_version":2,"type":"technical_theme","theme_id":"technical-theme:...","title":"主题名","tags":[],"summary":"当前理解","key_variables":"关键变量","validation_signals":[],"related_projects":[],"updated_at":"YYYY-MM-DD","source_path":"03_技术主题/主题名.md"}
-```
-
-## Valuation Anchor
-
-```markdown
-# 估值锚点｜赛道名
-
-## 使用口径
-## 上市公司可比
-## 一级市场可比
-### 公司 / 材料 / 公开口径
-## 商业模式分层
-## 我们自己的价格纪律
-## 最近更新
-```
-
-For each useful observation, capture project, date, round or operating stage, stated valuation, financing amount, source context, maturity or metric denominator, and a short comparability note. Separate market/company price from internal price discipline.
-
-Generated valuation record:
-
-```json
-{"schema_version":2,"type":"valuation_anchor","valuation_id":"valuation:...","sector":"赛道名","summary":"内部价格纪律","updated_at":"YYYY-MM-DD","source_path":"04_估值锚点/赛道名.md"}
-```
-
-## Event Card
-
-```markdown
-# 事件卡片｜事件短名
-
-- 日期:
-- 来源:
-- 主赛道:
-- 标签:
-- 事件类型: financing / product / technical / policy / market / public-company / macro / open-source
-- 影响等级: high / medium / low
-
-## 事件
-## 为什么重要
-## 影响哪些项目/赛道
-## 估值或技术含义
-## 后续跟踪
-```
-
-Generated event record:
-
-```json
-{"schema_version":2,"type":"event","event_id":"event:...","title":"事件短名","date":"YYYY-MM-DD","primary_sector":"赛道名","tags":[],"event_type":"policy","impact":"high","source_refs":[],"source_path":"05_事件卡片/YYYY-MM-DD_事件短名.md","related_projects":[],"summary":"Why this matters."}
-```
-
-## Person Card
-
-```markdown
-# 人物卡片｜姓名或待核验称呼
-
-- 创建日期:
-- 最近更新:
-- 别名:
-- 身份状态: verified / partial / pending
-- 当前机构/角色:
-- 相关项目:
-- 相关赛道:
-- 标签:
-- 信息口径: public / project-material / transcript / interview-note / pending-verification
-- 当前判断:
-
-## 一句话
-## 身份消歧
-## 学术与技术背景
-## 论文 / 专利 / GitHub / 开源
-## 创业与产业履历
-## 跨项目关系
-## 对投资判断的启发
-## 风险与待确认
-## 来源
-```
-
-Generated person record:
-
-```json
-{"schema_version":2,"type":"person","person_id":"person:...","name":"Person Name","aliases":[],"identity_status":"verified","current_org_role":"","related_projects":[],"primary_sectors":[],"tags":[],"source_tiers":["public"],"source_path":"06_人物卡片/YYYY-MM-DD_Person Name.md","updated_at":"YYYY-MM-DD","summary":"Why this person matters."}
-```
-
-## Operations
+`null` is only for a new object. Existing objects require their full prior hash. Snapshot support:
 
 ```bash
-python3 scripts/rebuild_indexes.py --workspace-root "<workspace_root>"
-python3 scripts/validate_memory_graph.py --workspace-root "<workspace_root>"
+python3 scripts/write_graph.py --workspace-root "<root>" --snapshot "03_技术主题/Example.md"
+python3 scripts/write_graph.py --workspace-root "<root>" --plan "<private-plan.json>" --dry-run
+python3 scripts/write_graph.py --workspace-root "<root>" --plan "<private-plan.json>"
+python3 scripts/validate_memory_graph.py --workspace-root "<root>"
 ```
 
-To normalize an older v2 layout, first review where reusable ledger content belongs, then run:
+The writer takes a short shared file lock, checks all expected hashes before writing, verifies project headers against formal state, writes atomically per file and rebuilds indexes once. A conflict requires rereading and merging, not blind retry. Ordinary exceptions restore original files. This is not a crash-transaction database: after interruption, read back affected files and rebuild/validate before claiming completion. Legacy/manual writers must adopt this entry point to participate in locking.
 
-```bash
-python3 scripts/migrate_memory_graph_v2.py --workspace-root "<workspace_root>"
-```
+`sync_project.py` and standalone rebuild use the same lock. Research and report preparation need not be serialized. Validate structure/index freshness and read back changed reasoning separately. Validation does not prove factual accuracy.
 
-The migration archives the old thesis ledger and index, renumbers event and people folders, updates active path references, rebuilds indexes, and preserves the archived snapshot outside active retrieval.
+## Source Notes And Thresholds
+
+One evolving `知识来源/.../核心整理.md` keeps source context, original-content coverage, takeaways, mechanism analysis, prior-memory connections and actual writeback. No fixed takeaway cap; omit empty follow-ups. Full original content is preserved once when available.
+
+Events require standalone durable decision value. People require independent industry, research or operating importance; neither layer is a news log, contact list or meeting roster. Important signals without a safe destination may use the existing small review note, not a new proposal queue.
+
+The legacy layout migrator only normalizes older directories. Content restructuring needs review, a private backup and source/link preservation; it is not an automatic summarizer.

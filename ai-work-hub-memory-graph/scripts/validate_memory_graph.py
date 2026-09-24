@@ -140,6 +140,9 @@ def validate_project_records(
                                 state_path,
                                 f"{field} differs from generated index",
                             )
+                    for field, label in (("judgment_display", "当前投资判断"), ("updated_at", "最近更新"), ("project_status", "项目状态")):
+                        if str(state.get(field, "")) != parsed["fields"].get(label, ""):
+                            add_error(errors, card_path, f"stale header: {label}; sync the project")
                     source_files: list[Path] = []
                     for source_ref in [
                         state.get("running_judgment_path", ""),
@@ -247,6 +250,12 @@ def main() -> int:
             "graph-only projects without a project state file: "
             + ", ".join(graph_only)
         )
+
+    from rebuild_indexes import build_outputs
+    expected = build_outputs(workspace_root, memory_root)
+    for name, records in expected.items():
+        if indexes.get(name) != records:
+            add_error(errors, memory_root / "00_索引" / name, "stale generated index; rebuild indexes")
 
     print(
         "Validated: "
