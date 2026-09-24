@@ -1,78 +1,63 @@
 #!/usr/bin/env python3
-"""Sync one project state to its Memory Graph card."""
+"""Sync a compact project projection without inventing or changing its judgment."""
 
 from __future__ import annotations
 
 import argparse
 import json
-import subprocess
-import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from memory_graph_lib import (
-    file_hash,
-    parse_markdown,
-    project_card_name,
-    replace_card_header,
-    state_to_card_fields,
-    resolve_workspace_path,
-    write_json_atomic,
-)
+from memory_graph_lib import (file_hash, graph_lock, parse_markdown, project_card_name,
+                              replace_card_header, resolve_workspace_path,
+                              state_to_card_fields, write_json_atomic, write_text_atomic)
+from rebuild_indexes import rebuild
 
 
-def load_json(path: Path) -> dict[str, Any]:
-    value = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(value, dict):
-        raise ValueError(f"{path} must contain a JSON object")
-    return value
-
-
-def workspace_path(workspace_root: Path, value: str) -> Path | None:
-    if not value:
-        return None
-    path = Path(value).expanduser()
-    return path if path.is_absolute() else workspace_root / path
+COMPACT_FIELDS = ("Schema Version", "项目 ID", "创建日期", "最近更新", "主赛道",
+                  "标签", "别名", "项目状态", "当前投资判断", "状态文件", "同步哈希")
 
 
 def initial_card_text(state: dict[str, Any]) -> str:
-    name = str(state["name"])
-    summary = str(state.get("summary", "")).strip()
-    return f"""# 项目卡片｜{name}
+    return f"# 项目卡片｜{state['name']}\n\n## 一句话\n\n{state.get('summary', '')}\n"
 
-## 一句话
 
-{summary}
+def compact_header(state: dict[str, Any], text: str, state_path: str) -> str:
+    fields = state_to_card_fields({**state, "state_path": state_path})
+    return replace_card_header(text, [(key, fields[key]) for key in COMPACT_FIELDS if key in fields])
 
-## 公司与产品
 
-## 技术路线
-
-## 客户与商业化
-
-## 团队技术背景
-
-## 估值与融资
-
-## 已验证事实
-
-## 公司/来源自述
-
-## 仍需确认
-
-## 外部动态
-
-## 相似项目
-
-## 反例项目
-
-## 相关赛道/技术主题
-
-## 对投资判断的启发
-
-## 下次触发更新的信号
-"""
+def sync(workspace: Path, memory: Path, state_path: Path, skip_rebuild: bool = False) -> Path:
+    workspace, memory, state_path = workspace.resolve(), memory.resolve(), state_path.resolve()
+    with graph_lock(memory):
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+        name = str(state["name"])
+        if "/" in name or "\\" in name:
+            raise ValueError("project name cannot contain path separators; use aliases")
+        cards = [p for p in (memory / "01_项目卡片").glob("*.md")
+                 if project_card_name(parse_markdown(p)) == name]
+        if len(cards) > 1:
+            raise ValueError(f"expected one card for {name}, found {len(cards)}")
+        created = str(state.get("created_at") or datetime.now().date().isoformat())
+        card = cards[0] if cards else memory / "01_项目卡片" / f"{created}_{name}.md"
+        if not cards and card.exists():
+            raise ValueError(f"unrecognized card already exists: {card}")
+        text = card.read_text(encoding="utf-8") if cards else initial_card_text(state)
+        sources = [resolve_workspace_path(workspace, str(ref)) for ref in
+                   [state.get("running_judgment_path", ""), *state.get("source_refs", [])]]
+        state["source_hash"] = file_hash(p for p in sources if p)
+        state["last_synced_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
+        write_json_atomic(state_path, state)
+        write_text_atomic(card, compact_header(state, text, state_path.relative_to(workspace).as_posix()))
+        write_json_atomic(memory / ".system" / "last-sync.json", {
+            "schema_version": 2, "action": "sync_project", "project": name,
+            "state_path": state_path.relative_to(workspace).as_posix(),
+            "card_path": card.relative_to(memory).as_posix(), "completed_at": state["last_synced_at"],
+        })
+        if not skip_rebuild:
+            rebuild(workspace, memory)
+        return card
 
 
 def main() -> int:
@@ -82,120 +67,11 @@ def main() -> int:
     parser.add_argument("--memory-root")
     parser.add_argument("--skip-rebuild", action="store_true")
     args = parser.parse_args()
-    workspace_root = Path(args.workspace_root).expanduser().resolve()
-    memory_root = (
-        Path(args.memory_root).expanduser().resolve()
-        if args.memory_root
-        else workspace_root / "Memory Graph"
-    )
-    state_path = Path(args.state).expanduser().resolve()
-    state = load_json(state_path)
-    project_name = str(state["name"])
-    if "/" in project_name or "\\" in project_name:
-        raise ValueError("project name cannot contain path separators; use aliases")
-    cards = []
-    for card_path in (memory_root / "01_项目卡片").glob("*.md"):
-        if project_card_name(parse_markdown(card_path)) == project_name:
-            cards.append(card_path)
-    created_card = False
-    if not cards:
-        created_at = str(state.get("created_at") or datetime.now().date().isoformat())
-        card_path = memory_root / "01_项目卡片" / f"{created_at}_{project_name}.md"
-        card_path.parent.mkdir(parents=True, exist_ok=True)
-        if card_path.exists():
-            raise ValueError(f"card path exists but was not recognized: {card_path}")
-        card_path.write_text(initial_card_text(state), encoding="utf-8")
-        cards.append(card_path)
-        created_card = True
-    if len(cards) != 1:
-        raise ValueError(
-            f"expected exactly one card for {project_name}, found {len(cards)}"
-        )
-    card_path = cards[0]
-    now = datetime.now().astimezone().isoformat(timespec="seconds")
-    running = workspace_path(
-        workspace_root,
-        str(state.get("running_judgment_path", "")),
-    )
-    source_files = [running] if running else []
-    for source_ref in state.get("source_refs", []):
-        source_path = resolve_workspace_path(workspace_root, str(source_ref))
-        if source_path and source_path.exists():
-            source_files.append(source_path)
-    state["source_hash"] = file_hash(source_files)
-    state["last_synced_at"] = now
-    write_json_atomic(state_path, state)
-
-    parsed = parse_markdown(card_path)
-    card_state = dict(state)
-    card_state["state_path"] = state_path.relative_to(workspace_root).as_posix()
-    ordered = state_to_card_fields(card_state)
-    field_order = [
-        "Schema Version",
-        "项目 ID",
-        "创建日期",
-        "最近更新",
-        "最近同步",
-        "主赛道",
-        "标签",
-        "别名",
-        "资料模式",
-        "历史结果",
-        "复盘状态",
-        "历史决策日期",
-        "复盘基准日",
-        "项目状态",
-        "流程阶段",
-        "投资判断",
-        "建议打法",
-        "仓位",
-        "价格判断",
-        "判断置信度",
-        "当前投资判断",
-        "融资阶段",
-        "估值摘要",
-        "状态文件",
-        "资料来源",
-        "同步哈希",
-    ]
-    card_path.write_text(
-        replace_card_header(
-            parsed["text"],
-            [(label, ordered[label]) for label in field_order if label in ordered],
-        ),
-        encoding="utf-8",
-    )
-
-    system_root = memory_root / ".system"
-    system_root.mkdir(parents=True, exist_ok=True)
-    log_path = system_root / "last-sync.json"
-    write_json_atomic(
-        log_path,
-        {
-            "schema_version": 2,
-            "action": "sync_project",
-            "project": project_name,
-            "state_path": state_path.relative_to(workspace_root).as_posix(),
-            "card_path": card_path.relative_to(memory_root).as_posix(),
-            "completed_at": now,
-        },
-    )
-    if not args.skip_rebuild:
-        subprocess.run(
-            [
-                sys.executable,
-                str(Path(__file__).with_name("rebuild_indexes.py")),
-                "--workspace-root",
-                str(workspace_root),
-                "--memory-root",
-                str(memory_root),
-            ],
-            check=True,
-        )
-    print(f"Synced {project_name}")
-    if created_card:
-        print(f"Created project card: {card_path}")
-    print(f"Latest sync metadata: {log_path}")
+    workspace = Path(args.workspace_root).expanduser().resolve()
+    memory = Path(args.memory_root).expanduser().resolve() if args.memory_root else workspace / "Memory Graph"
+    card = sync(workspace, memory, Path(args.state).expanduser().resolve(), args.skip_rebuild)
+    print(f"Synced: {card}")
+    print("Header sync does not establish that the analytical prose is current; read back the changed sections.")
     return 0
 
 

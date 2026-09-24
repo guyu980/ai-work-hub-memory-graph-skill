@@ -46,7 +46,7 @@ Memory Graph Skill is the default entry point and performs substantive, decision
 2. For interviews, organize the main questions and answers close to the original wording while correcting obvious transcription errors transparently.
 3. Retrieve relevant Memory Graph objects and prior source notes before finalizing the analysis.
 4. Extract the important takeaways and explain relevant technical or commercial mechanisms; do not stop at a recap or force a fixed count.
-5. Preserve the original link and separate verified facts, source opinions, unresolved claims, and transcription risks.
+5. Preserve the original link and distinguish facts, source opinions, unresolved claims, and transcription risks beside the relevant statements; do not create a separate evidence ledger or repeat the same material in multiple sections.
 6. State what prior understanding was reinforced, revised, or contradicted and which projects or investment themes may be affected.
 7. Record reusable implications and only practical follow-ups that can change a decision. Source attribution alone does not require independent verification, a company audit or a new task. Omit empty sections.
 8. Link any actual graph writeback; do not create one graph card per source.
@@ -66,3 +66,5 @@ For podcasts, public interviews and talks, use [Public Interviews And Discovery]
 The source note is durable even when it creates no graph update. Write to Memory Graph only when the source adds a reusable change to an existing project, sector, technical theme, valuation anchor, durable event, or independently important person.
 
 Do not add a knowledge-source card type or generated source index in the MVP. Ordinary interview statements are not event cards, and ordinary participants are not people cards.
+
+Use the shared `write_graph.py` hash-check and lock workflow for graph changes, then link the resulting objects from the core note. The source date and the date through which the graph's understanding is current are not the file-edit date.
