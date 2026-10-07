@@ -11,6 +11,7 @@ Keep the existing 01–06 folders. No parallel thesis ledger, Evidence Ledger, s
 - One object per subject and decision question. Reuse its filename; split only when questions have genuinely different mechanisms. Keep an old entry as a short linked overview when needed for compatibility.
 - Non-project objects use `内容截至: YYYY-MM-DD`, optional aliases and tags. This is the newest information actually incorporated, not migration time, file mtime, source publication date or a future milestone. A source being reread does not make its facts newly verified.
 - Start with current understanding; rewrite it on a material change. Keep only meaningful turning points, not a daily append log. Preserve original detail at its owning source.
+- Organize changes by assumption/mechanism. Merge repeated examples into representative dated evidence and preserve material counterarguments; unchanged concerns do not need another news paragraph or task.
 - Omit empty or inapplicable sections. Source attribution belongs next to the relevant fact; avoid duplicating a subject in separate “verified” and “company claim” narratives.
 - Use ordinary relative Markdown links. On substantive analogies, explain the relationship and where it fails. A link is relevance, not corroboration.
 - Selected operating metrics carry period, unit and actual/forecast/source labels. Do not turn this into claim-by-claim bookkeeping.
@@ -39,6 +40,8 @@ Keep business positioning distinct from the latest transaction or fund task. Det
 
 Archived project background can remain useful, but date it as historical and do not present its old investment recommendation as current. External news identifies the affected assumption and whether reassessment is useful; it never silently changes formal status or decision.
 
+At a natural project update, absorb selected unresolved external questions into the existing core todo/question list and remove resolved ones. Do not create a second action queue or require every source to yield a follow-up.
+
 ## Valuation Observations
 
 Use the same columns across pages:
@@ -56,7 +59,9 @@ Relationships derive from explicit Markdown links plus project state membership 
 
 A project relationship is not automatically a financial comparable. Abstract failure patterns stay prose, not fabricated external companies. Unmodeled public companies remain source references; no forced card creation. Links to knowledge-source core notes can be indexed as source relationships without a new source-card directory.
 
-Retrieval searches fresh graph text, core source notes, reports, running project judgments and structured GitHub radar candidates. The limit is across direct results, not per type; neighbors are ranked and bounded to one hop. Read the matched source and its as-of date before reasoning from it. Lexical search can miss synonyms: reformulate or use targeted full-text search, without adding a new database by default.
+Retrieval searches fresh graph text, core source notes, reports, running project judgments, structured GitHub radar candidates and existing cross-task sourcing reviews. The latter reuse candidates in `自动化归档/跨任务复盘/*_数据.json` (name/aliases/repos, payload as_of); no new card or review file is required merely for retrieval. The limit is across direct results, not per type; neighbors are ranked and bounded to one hop.
+
+Full names/aliases establish entity matches; general words and partial alias prefixes do not. Workspace records expose date_basis for state, content metadata or filename fallback. Near-identical research snapshots share a result slot after each version's body is searched: older-only information stays retrievable, and other_versions links the alternatives. Genuinely different studies remain separate. Read dates and useful source text; lexical misses need a better query or targeted search, not a new database.
 
 ## Safe Writeback
 

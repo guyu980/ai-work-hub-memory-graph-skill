@@ -68,3 +68,5 @@ The source note is durable even when it creates no graph update. Write to Memory
 Do not add a knowledge-source card type or generated source index in the MVP. Ordinary interview statements are not event cards, and ordinary participants are not people cards.
 
 Use the shared `write_graph.py` hash-check and lock workflow for graph changes, then link the resulting objects from the core note. The source date and the date through which the graph's understanding is current are not the file-edit date.
+
+Use explicit content-as-of metadata for the newest information actually incorporated. Keep publication, transcript and preparation dates distinct; correcting formatting or rereading the same source does not refresh knowledge. On repeated treatment improve the same note. At Graph writeback, merge material into the affected mechanism instead of copying the source's chronology; unchanged concerns can remain source-only.

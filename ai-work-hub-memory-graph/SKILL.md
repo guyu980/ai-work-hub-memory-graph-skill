@@ -1,124 +1,92 @@
 ---
 name: ai-work-hub-memory-graph
-description: Analyze and preserve non-project expert interviews, public conversations and thematic sources; recall prior projects, sector and technical views, valuations and important people before a decision. Maintain private, structured investment memory across diligence, research and authorized intelligence tasks. Persist reusable sources unless saving is excluded; formal deep research requires an explicit request.
+description: Analyze reusable non-project interviews, public conversations and thematic sources; retrieve prior projects, mechanisms, sectors and valuation context. Maintain private investment memory across diligence, research and authorized intelligence, updating current understanding rather than accumulating news.
 ---
 
 # AI Work Hub Memory Graph
 
-## Contract
+## Ownership
 
-This is a continuous private decision-memory workflow, not a second document archive. Go deep on important mechanisms and opposing explanations; keep routine handling small. Attributed company or expert inputs are usable without independently proving every claim. Investigate gaps only when they can change a conclusion or useful action.
+This is continuous private decision memory, not a second report archive.
 
-- Project folders own company materials and the one running judgment; project state owns the machine-readable decision.
-- `知识来源/` owns reusable non-project source analysis. Preserve it by default, even for “看看/总结”, unless the user excludes saving or the content is disposable.
-- Formal research and intelligence archives keep their full reports; graph Markdown keeps reusable synthesis.
-- Update existing objects. Rewrite current understanding when it changes; do not only append dated paragraphs.
-- JSONL indexes are generated caches, never hand-edited. No new database, Evidence Ledger, thesis ledger or source-card layer.
-- Automation can flag project impact and reassessment signals, not silently change formal investment status, participation, price or confidence.
-- Public Skill files contain generic mechanisms only. Real projects, graph data, personal taxonomy/watchlists and credentials remain private.
-
-Read `references/schema.md` when writing graph objects or changing their structure. Read other references only for the relevant source/workflow.
-
-## Route The Input
-
-| Input / increment | Owner |
+| Material | Durable owner |
 | --- | --- |
-| One company's BP, datapack or diligence interview | `ai-work-hub-diligence`; `项目/<name>/` |
-| Non-project expert interview, podcast or thematic material | This Skill; one source under `知识来源/` |
-| Explicit formal/systematic research request | `ai-work-hub-deep-research`; report plus selected graph deltas |
-| Known-project public news | Its card's dated external signal, with affected assumption and possible reassessment |
-| Cross-company market/value-capture view | Existing sector map |
-| Mechanism, technical route, bottleneck or economics | Existing technical theme |
-| Useful comparable price | Existing valuation page, using the shared observation columns |
-| Durable standalone external change | Event card only when its independent value warrants one |
-| Independently important founder/scientist/operator | Person card, not a team roster or CRM |
-| Duplicate or low-value detail | Original report/source only |
+| One company's materials/current investment judgment | Project folder and `ai-work-hub-diligence`; state owns the formal machine-readable decision |
+| Reusable non-project interview, podcast or thematic source | One evolving core note under `知识来源/`, handled here |
+| Explicit formal research | Report under `行业研究/` or the project; `ai-work-hub-deep-research` |
+| Recurring intelligence | Its full report archive; only durable increments enter Graph |
+| Reusable cross-project understanding | Existing Graph Markdown object |
+| Indexes | Generated caches; never hand-edited |
 
-A source can merit a substantive core note without producing any graph change. Important information has no fixed count cap. Use the existing small review note only when an important signal genuinely has no safe destination, not as a default news queue.
+Preserve reusable source analysis by default, including “看看/总结”, unless saving is excluded. A worthwhile source note need not produce a Graph change. Follow local configurable taxonomy; do not impose a user's sectors or watchlist through the public Skill. Fund/deal workpapers and organizational sharing have separate ownership/authorization.
 
-Fund operations, deal execution and post-investment tasks keep their task-specific source files; do not restart BP screening or copy their entire workpapers into a company card. Shared organizational deployments have separate authorization boundaries: a private graph match is not permission to publish it.
+## Working Loop
 
-## Source Analysis
+1. Confirm an unknown workspace on first use, identify ownership and find the existing object/source.
+2. Read the original and useful prior memory. For Feishu, find original text/transcript and relevant nested links; smart minutes are navigation. Disclose inaccessible content.
+3. Analyze the important mechanisms, strongest opposing interpretation and implications. Attributed expert/company inputs are usable without a universal verification exercise. Additional research is bounded by what could change the conclusion.
+4. Maintain one core source note with context, content/Q&A, takeaways, reasoning, useful connections and only worthwhile follow-ups. See [knowledge-sources.md](references/knowledge-sources.md) for source handling.
+5. Decide whether this changes reusable understanding, materially strengthens/challenges an assumption, supplies a useful comparable or offers an independently important event/person. Otherwise retain it only at the source/report.
+6. Rewrite affected objects, apply the shared writer, and read back the changed reasoning.
 
-Read `references/knowledge-sources.md` for source layout, Feishu handling and core-note expectations.
-
-1. Confirm the workspace on first use if unknown, then determine source ownership and deduplicate the conversation across platforms.
-2. Preserve the original file/link once. For Feishu, find original text/transcript and relevant nested links; smart minutes are navigation. State unavailable content rather than implying a full reading.
-3. Read useful prior knowledge before final analysis. Explain what this source reinforces, revises or contradicts.
-4. Maintain one evolving core note: clear content or Q&A, important takeaways, mechanisms, opposing interpretations, source boundaries, relevant connections and worthwhile follow-ups.
-5. Do bounded public checks when they materially help. Do not escalate one interview into formal Deep Research or a company audit.
-6. Route durable increments to existing objects and link the source note. Record the actual writeback or explicitly state that no graph delta was material.
-
-Source labels belong near meaningful facts. A transcript confirms what was said, not that the underlying claim is true. Do not duplicate the same subject under separate source-tier sections merely to satisfy a checklist.
-
-## Public Discovery
-
-Read `references/public-interviews.md` for interviews, podcasts, talks and authorized discovery.
-
-Reuse existing intelligence tasks; this Skill does not schedule itself. Discover through substantive people, current questions and useful channels. For proactive selection, prioritize firsthand contribution, industry/research standing and depth of reasoning; popularity or a desire to fill a quota is insufficient. This filter does not reject material the user explicitly asks to analyze.
-
-Screen cheaply, then read worthwhile original content and preserve one core note. Keep access/transcription limits explicit. Reports carry discoveries; only reusable changes enter the graph. Personal watchlists and editorial priorities are private and customizable.
+No fixed cap on important analysis or Graph changes. No new Evidence Ledger, thesis ledger, source-card layer, CRM or proposal queue. Duplicate concerns do not warrant a new paragraph or task.
 
 ## Retrieve Before Judging
 
-1. Query the actual question using company aliases, technical route, customer budget, business model or valuation terms, not just a broad sector name.
-2. Retrieve a small combined result set, then read the best sources. The helper covers fresh card text, source notes, research, running judgments and structured GitHub radar candidates, plus bounded one-hop neighbors.
-3. State useful analogy, counterexample, mechanism or price anchor and its limits. Links establish relevance, not independent evidence.
-4. Check as-of dates. Historical facts do not become current because a file was reorganized. Reformulate weak lexical queries or do targeted full-text search; an empty result does not prove absence.
-5. Do not rebuild for a read-only question or scan the whole workspace routinely.
+Query the actual decision: company/alias, mechanism, buyer, budget or price denominator. Retrieve a compact combined set, then read the useful source text and dates.
 
 ```bash
-python3 <skill_dir>/scripts/retrieve_memory.py \
-  --workspace-root "<root>" --query "<decision-relevant terms>" --limit 8
+python3 <skill_dir>/scripts/retrieve_memory.py --workspace-root "<root>" --query "<specific question>" --limit 8
 ```
 
-The limit applies across direct results; neighbors are separately bounded. Output is temporary query material, not a new knowledge store.
+The helper searches fresh Graph text, core source notes, formal research, running judgments, structured GitHub radar candidates and existing cross-task sourcing reviews. It uses full entity names/aliases rather than generic-word prefixes. Similar research versions can share a result slot; `other_versions` preserves access to dated snapshots.
 
-## Same-Type Structure
+Check `updated_at` and `date_basis`: formal project-state date, explicit content metadata and filename fallbacks do not mean the same thing. A file reorganization does not refresh the facts. Results/one-hop links are relevance, not corroboration; lexical misses require a better query or targeted full-text search, not a claim of absence. Do not rebuild or audit the workspace for a read-only query.
 
-Keep six object layers: `01_项目卡片`, `02_赛道地图`, `03_技术主题`, `04_估值锚点`, `05_事件卡片`, `06_人物卡片`.
+## Structure And Updating
 
-- Project: business positioning, compact current projection, decisive variables, reusable lesson, relevant connections and next signals. Link the running judgment for transaction detail.
-- Sector: value capture and subdirection comparison; link representative projects without duplicating current project decisions.
-- Theme: core question, mechanisms/routes, supporting and contrary material, economic meaning and new signals.
-- Valuation: common columns for object/date/round/price basis/financing/operating denominator/comparability/source; equity, M&A/licensing and debt are separate.
-- Event: current state and durable effect, a few meaningful turning points if needed; not a daily log.
-- Person: current identity, key work and important views with project/theme/source links; not every meeting participant.
+Six existing layers remain: projects, sectors, technical themes, valuation anchors, events and people. Read [schema.md](references/schema.md) for writing and compatibility.
 
-Use explicit knowledge-as-of metadata for non-project objects and ordinary Markdown links. Preserve filename stability. Omit empty sections; no arbitrary length cap on important reasoning. Full templates and compatibility rules are in `references/schema.md`.
+- **Project:** business, current projection, decisive variables, reusable lesson and selected external signals. Formal investment decisions stay in the project judgment/state.
+- **Sector:** buyer, value capture, subdirection economics, opportunities/counterarguments and representative project links.
+- **Theme:** mechanism, key variables, supporting/contrary material, commercial implications and signals that would change understanding.
+- **Valuation:** dated observations grouped by instrument and comparable denominator; explain which objects are useful for which business/stage.
+- **Event:** a durable standalone change, not every report item.
+- **Person:** independent industry/research/operating significance, not every founder, employee or meeting participant.
 
-Routine prices from BPs, interviews or datapacks need attribution, not agreements or payment checks. Missing fields stay unknown. Investigate only when a specific uncertainty affects the actual decision, holding, return math or transaction risk.
+Start with the current view. Organize supporting changes by **assumption/mechanism**, not a daily news chronology. Merge repeated examples, retaining representative dated evidence and links to original detail. Preserve genuinely different evidence and meaningful turning points; do not flatten counterarguments merely to shorten a file.
 
-## Write Back
+Project external signals state the affected assumption and whether focused reassessment is useful. At a natural company update, Diligence can absorb selected unresolved questions into its existing todo. News never silently changes status, participation, price or confidence. No reminder is needed when there is no new material implication.
 
-For diligence, finalize the single project judgment/state first. Update the card's substance from it, including contradictory old prose; a refreshed header/hash does not establish semantic freshness. Keep latest fund/legal tasks separate from company positioning.
+Sector/theme pages link the authoritative project decision; they do not maintain another live portfolio/transaction model. Company-stated valuation/financing is a valid screening input, not an automatic agreement/payment check.
 
-For reports, finish and archive the report first, then route only consequential increments. A changed assumption belongs in the current synthesis, not another news paragraph. For known projects, explain the impact and whether focused reassessment is worthwhile. Do not invent a task for every risk or silently modify formal decisions.
+## Discovery And Sourcing
 
-For all graph writers:
+Use [public-interviews.md](references/public-interviews.md) for public conversations and authorized discovery. Screen cheaply, select firsthand contribution, substantial people and useful reasoning, then read worthwhile originals. Existing intelligence tasks discover; the Skill does not schedule itself.
 
-1. Refresh project headers from finalized state with `sync_project.py --skip-rebuild` when necessary.
-2. Read affected files after any sync and capture their hashes with `write_graph.py --snapshot`.
-3. Prepare the final Markdown outside active graph folders. Use the plan format in `references/schema.md`.
-4. Apply the batch through `write_graph.py --plan`. It uses a short shared lock, rejects stale hashes and rebuilds indexes once; conflicts require rereading and merging both changes.
-5. Validate after actual writes and read back affected current-view sections. Report precise failures; do not claim a successful write merely from a plan or hash.
+GitHub interest, technical merit and contact value are different judgments. Reuse radar and cross-task sourcing records before proposing outreach; follow company/repository aliases back to the people and commercial owner. Selected leads can remain in those records without creating project/person cards. No blanket demo, environment test or company audit before an informative first conversation.
 
-Research and report preparation can remain parallel. The lock only covers shared writes. Scripts use POSIX file locking (macOS/Linux); do not claim cross-process protection for a writer that bypasses the entry point.
+## Shared Writes
 
-## Commands
+For project work, finalize the running judgment/state before syncing the card header. For reports, complete the report before writing selected increments. Header/hash synchronization is not semantic freshness.
+
+1. If needed, run `sync_project.py --skip-rebuild`.
+2. Read affected files after sync and capture prior hashes with `write_graph.py --snapshot`.
+3. Prepare final Markdown outside active Graph folders and use the plan format in [schema.md](references/schema.md).
+4. Apply via `write_graph.py --plan`: short shared lock, stale-hash rejection and one index rebuild per batch.
+5. On conflict, reread and merge both changes. Validate and read back the actual affected sections before claiming completion.
+
+Preparation can proceed independently; the shared-write interval is serialized. POSIX locking supports macOS/Linux and does not protect writers that bypass the entry point.
+
+## Setup And Acceptance
+
+Initialize only when absent:
 
 ```bash
 python3 <skill_dir>/scripts/init_memory_graph.py --workspace-root "<root>"
-python3 <skill_dir>/scripts/init_knowledge_source.py --workspace-root "<root>" --init-only
-python3 <skill_dir>/scripts/init_knowledge_source.py --workspace-root "<root>" \
-  --kind expert-interview --date YYYY-MM-DD --name "<expert>" --topic "<topic>"
-python3 <skill_dir>/scripts/sync_project.py --workspace-root "<root>" --state "<state.json>" --skip-rebuild
-python3 <skill_dir>/scripts/write_graph.py --workspace-root "<root>" --plan "<private-plan.json>"
-python3 <skill_dir>/scripts/validate_memory_graph.py --workspace-root "<root>"
+python3 <skill_dir>/scripts/init_knowledge_source.py --workspace-root "<root>" --kind expert-interview --date YYYY-MM-DD --name "<expert>" --topic "<topic>"
 ```
 
-Use `--kind thematic-material` for thematic sources. Standalone `rebuild_indexes.py` repairs generated caches after maintenance; legacy `migrate_memory_graph_v2.py` normalizes old directories, not prose quality.
+Use `--kind thematic-material` for thematic sources. Standalone `rebuild_indexes.py` repairs caches; legacy migration normalizes layout, not prose.
 
-## Completion
-
-Confirm source coverage, a single durable owner, coherent current understanding, meaningful links and dates, preserved formal decisions, successful changed-batch validation/readback, and privacy. No useful follow-up or no graph delta is a valid result.
+After writes, run `validate_memory_graph.py --workspace-root "<root>"` and read back dates, useful links, current reasoning and preserved formal decisions. No useful follow-up or no Graph delta is valid. Source coverage, private ownership and actual write success matter more than filling every section. Real knowledge, personal taxonomy, automation destinations and credentials never belong in the public repository.
