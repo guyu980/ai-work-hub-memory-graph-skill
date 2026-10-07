@@ -180,13 +180,31 @@ def content_hash(path: Path) -> str | None:
 
 
 def content_date(parsed: dict[str, Any]) -> str:
-    """Use knowledge dates, never a future milestone or the file's mtime."""
+    """Prefer explicit document dates over incidental dates in the narrative."""
     fields = parsed["fields"]
-    for key in ("内容截至", "最近更新", "日期"):
-        value = fields.get(key, "")[:10]
-        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
-            date.fromisoformat(value)
-            return value
+    header = parsed["text"].split("\n## ", 1)[0]
+    labels = ("内容截至", "最近更新", "更新与研究截止", "研究截止", "研究截至",
+              "更新日期", "更新时间", "整理日期", "更新", "来源日期", "日期")
+    for key in labels:
+        value = fields.get(key, "")
+        if not value:
+            match = re.search(r"(?m)^\s*(?:-\s*)?(?:\*\*)?" + re.escape(key)
+                              + r"\s*[：:]\s*(?:\*\*)?\s*(\d{4}-\d{2}-\d{2})", header)
+            value = match.group(1) if match else ""
+        match = re.match(r"\d{4}-\d{2}-\d{2}", value)
+        if match:
+            try:
+                date.fromisoformat(match.group())
+            except ValueError:
+                continue
+            return match.group()
+    publication = re.search(r"(?:首次公开|首次发布|首发|发布时间)[：: ]*(\d{4}-\d{2}-\d{2})", header)
+    if publication:
+        try:
+            date.fromisoformat(publication.group(1))
+            return publication.group(1)
+        except ValueError:
+            pass
     # Legacy fallback is deliberately limited to explicitly dated updates.
     values = re.findall(r"(?:截至|更新[：: ]*|补充[：: ]*)[（( ]*(\d{4}-\d{2}-\d{2})", parsed["text"])
     return max((v for v in values if v <= date.today().isoformat()), default="")

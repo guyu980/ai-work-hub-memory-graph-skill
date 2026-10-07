@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+from datetime import date
+from difflib import SequenceMatcher
 import json
 import math
 import re
@@ -23,7 +25,54 @@ GROUPS = {
     "people": ("人物索引.jsonl", "06_人物卡片", "person"),
 }
 SKIP_DIRS = {"工作区", "原始资料", "解析文本", "node_modules", "templates"}
-STOP_WORDS = {"ai", "公司", "项目", "技术", "产品", "模型", "行业", "相关", "分析", "研究", "判断", "我们", "这个", "如何", "什么", "创始人", "创始", "始人", "团队", "估值"}
+STOP_WORDS = {"ai", "labs", "inc", "ltd", "corp", "company", "公司", "项目", "技术", "产品", "模型", "行业", "相关", "分析", "研究", "判断", "我们", "这个", "如何", "什么", "创始人", "创始", "始人", "团队", "估值"}
+ENTITY_STOP_WORDS = STOP_WORDS | {"数据", "客户", "权利", "收入", "融资", "机器人", "芯片", "平台", "应用", "agent", "labs"}
+
+
+def mentions(text: str, name: str) -> bool:
+    name = name.strip().lower()
+    if not name or name in ENTITY_STOP_WORDS:
+        return False
+    if re.search(r"[\u3400-\u9fff]", name):
+        return name in text.lower()
+    return bool(re.search(r"(?<![a-z0-9_])" + re.escape(name) + r"(?![a-z0-9_])", text.lower()))
+
+
+def identity_names(record: dict[str, Any]) -> list[str]:
+    names = [record.get("name", ""), record.get("title", ""), *record.get("aliases", [])]
+    if record.get("type") == "radar_candidate":
+        repo = str(record.get("title", ""))
+        names.extend(repo.split("/"))
+    return [str(name).strip() for name in names if str(name).strip()]
+
+
+def document_date(path: Path, parsed: dict[str, Any], kind: str) -> tuple[str, str]:
+    if kind == "project_judgment" and "项目判断与todo" in path.name:
+        name = path.name.split("_项目判断与todo", 1)[0]
+        state = path.parent / f"{name}_项目状态.json"
+        if state.is_file():
+            payload = json.loads(state.read_text(encoding="utf-8"))
+            value = str(payload.get("updated_at") or payload.get("review_as_of") or "")[:10]
+            if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+                date.fromisoformat(value)
+                return value, "project_state"
+    explicit = content_date(parsed)
+    if explicit:
+        return explicit, "document"
+    if kind == "research_report":
+        for state in sorted(path.parent.glob("*研究状态.json")):
+            payload = json.loads(state.read_text(encoding="utf-8"))
+            report = str(payload.get("report", ""))
+            if report and path.resolve() in {(state.parent / report).resolve(), (state.parent.parent / report).resolve()}:
+                value = str(payload.get("research_as_of") or payload.get("research_date") or "")[:10]
+                if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+                    date.fromisoformat(value)
+                    return value, "research_state"
+    match = re.match(r"\d{4}-\d{2}-\d{2}", path.name)
+    if match:
+        date.fromisoformat(match.group())
+        return match.group(), "filename"
+    return "", "unknown"
 
 
 def tokens(value: str) -> set[str]:
@@ -80,23 +129,39 @@ def select(records: list[dict[str, Any]], query_tokens: set[str], limit: int,
             continue
         value = score(record, query_tokens) + sum((weights or {}).get(t, 1) * 2 for t in matched)
         value *= 0.5 + len(matched) / max(len(query_tokens), 1)
+        phrases = record.get("_query_phrases", [])
+        phrase_matches = [phrase for phrase in phrases if phrase in body.lower()]
+        if phrases:
+            value *= 0.4 + 0.6 * len(phrase_matches) / len(phrases)
         entity_terms = set(record.get("_entity_terms", []))
         if entity_terms:
-            identity_text = " ".join(str(record.get(k, "")) for k in ("name", "title", "aliases")).lower()
-            if any(term in identity_text for term in entity_terms):
+            if any(mentions(name, term) for name in identity_names(record) for term in entity_terms):
                 value += 80 if record.get("type") in {"project", "project_judgment"} else 20
-            elif not any(term in body.lower() for term in entity_terms):
-                value *= 0.35
+            elif not any(mentions(body, term) for term in entity_terms):
+                topics = [p for p in phrases if not any(mentions(p, term) for term in entity_terms)]
+                explicit_topics = [p for p in topics if p in body.lower()]
+                if len(explicit_topics) < 2 and not any(re.fullmatch(r"[a-z0-9_.+-]{4,}", p) for p in explicit_topics):
+                    continue
         result = {key: item for key, item in record.items() if not key.startswith("_")}
         if overlap:
             result["match_line"], result["match_excerpt"] = excerpt(body, query_tokens)
             if record.get("type") == "radar_candidate":
                 result.pop("match_line", None)
-        ranked.append({"retrieval_score": value, **result})
+        ranked.append({"retrieval_score": value, "_version_group": record.get("_version_group"), **result})
     ranked.sort(key=lambda item: str(item.get("source_path", "")))
     ranked.sort(key=lambda item: str(item.get("updated_at", "")), reverse=True)
     ranked.sort(key=lambda item: item["retrieval_score"], reverse=True)
-    return ranked[:limit]
+    selected, seen_versions = [], set()
+    for item in ranked:
+        version_group = item.pop("_version_group")
+        if version_group and version_group in seen_versions:
+            continue
+        if version_group:
+            seen_versions.add(version_group)
+        selected.append(item)
+        if len(selected) == limit:
+            break
+    return selected
 
 
 def graph_records(memory_root: Path) -> dict[str, list[dict[str, Any]]]:
@@ -113,6 +178,7 @@ def graph_records(memory_root: Path) -> dict[str, list[dict[str, Any]]]:
             path = (memory_root / relative).resolve()
             if path.is_relative_to(memory_root.resolve()) and path.is_file():
                 parsed = parse_markdown(path)
+                record.setdefault("title", parsed["title"].split("｜", 1)[-1])
                 record["updated_at"] = content_date(parsed)
                 current = next((parsed["sections"][s] for s in ("一句话", "当前判断", "当前理解", "适用边界", "当前影响")
                                 if parsed["sections"].get(s)), "")
@@ -139,8 +205,9 @@ def workspace_notes(workspace: Path, patterns: list[str], kind: str) -> list[dic
             records.append({
                 "type": kind, "title": title, "source_path": relative.as_posix(),
                 "source_scope": "workspace_root", "_body": body,
-                "updated_at": content_date(parse_markdown(path)),
+                "updated_at": "",
             })
+            records[-1]["updated_at"], records[-1]["date_basis"] = document_date(path, parse_markdown(path), kind)
             if kind == "knowledge_source":
                 records[-1]["source_id"] = stable_id("source", relative.as_posix())
     return records
@@ -152,7 +219,7 @@ def one_hop(groups: dict[str, list[dict[str, Any]]], selected: dict[str, Any],
     selected_ids = set()
     direct_ids = set()
     seed_scores = {}
-    cutoff = max((item.get("retrieval_score", 0) for g in GROUPS for item in selected.get(g, [])), default=0) * 0.6
+    cutoff = max((item.get("retrieval_score", 0) for rows in selected.values() for item in rows), default=0) * 0.6
     for group, records in groups.items():
         all_chosen_paths = {item["source_path"] for item in selected[group]}
         chosen_paths = {item["source_path"]: item.get("retrieval_score", 0) for item in selected[group]
@@ -209,10 +276,62 @@ def radar_candidates(workspace: Path) -> list[dict[str, Any]]:
             if not name or name in records:
                 continue
             records[name] = {"type": "radar_candidate", "title": name, "entry_key": name,
+                             "aliases": [str(entity.get("name", "")) for entity in item.get("startup_entities", [])
+                                         if isinstance(entity, dict)],
                              "source_path": path.relative_to(workspace).as_posix(), "source_scope": "workspace_root",
                              "_body": json.dumps(item, ensure_ascii=False, indent=2),
                              "updated_at": str(payload.get("generated_at", ""))[:10] if isinstance(payload, dict) else ""}
     return list(records.values())
+
+
+def sourcing_reviews(workspace: Path) -> list[dict[str, Any]]:
+    records = {}
+    for path in sorted(workspace.glob("自动化归档/跨任务复盘/*_数据.json"), reverse=True):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            continue
+        for item in payload.get("candidates", []):
+            if not isinstance(item, dict) or not item.get("name"):
+                continue
+            name = str(item["name"])
+            if name in records:
+                continue
+            records[name] = {
+                "type": "sourcing_review", "title": name, "entry_key": str(item.get("id", name)),
+                "aliases": [*item.get("aliases", []), *item.get("repos", [])],
+                "source_path": path.relative_to(workspace).as_posix(), "source_scope": "workspace_root",
+                "updated_at": str(payload.get("as_of", ""))[:10], "date_basis": "review_as_of",
+                "_body": json.dumps(item, ensure_ascii=False, indent=2),
+            }
+    return list(records.values())
+
+
+def group_report_versions(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Tag similar versions, but search each body before choosing a result slot."""
+    def sample(body: str) -> str:
+        if len(body) <= 6000:
+            return body
+        middle = len(body) // 2
+        return body[:2000] + body[middle - 1000:middle + 1000] + body[-2000:]
+
+    grouped: list[list[dict[str, Any]]] = []
+    for record in sorted(records, key=lambda item: item.get("updated_at", ""), reverse=True):
+        title = re.sub(r"\s+", "", record.get("title", ""))
+        peer = next((items for items in grouped if re.sub(r"\s+", "", items[0].get("title", "")) == title
+                     and SequenceMatcher(None, sample(record["_body"]), sample(items[0]["_body"]), autojunk=False).ratio() > 0.8), None)
+        if peer is None:
+            grouped.append([record])
+        else:
+            peer.append(record)
+    for items in grouped:
+        if len(items) < 2:
+            continue
+        for item in items:
+            item["_version_group"] = items[0]["source_path"]
+            item["other_versions"] = [
+                {"source_path": other["source_path"], "updated_at": other["updated_at"]}
+                for other in items if other is not item]
+    return [item for items in grouped for item in items]
 
 
 def retrieve(workspace: Path, memory_root: Path, query: str, limit: int) -> dict[str, Any]:
@@ -222,27 +341,29 @@ def retrieve(workspace: Path, memory_root: Path, query: str, limit: int) -> dict
     query_tokens = tokens(query)
     if not query_tokens:
         return {"schema_version": 2, "query": query, **{g: [] for g in GROUPS},
-                "knowledge_sources": [], "research_reports": [], "project_judgments": [], "radar_candidates": [], "related": []}
+                "knowledge_sources": [], "research_reports": [], "project_judgments": [], "radar_candidates": [], "sourcing_reviews": [], "related": []}
     groups = graph_records(memory_root)
     groups["knowledge_sources"] = workspace_notes(
         workspace, ["知识来源/**/*核心整理.md"], "knowledge_source")
-    groups["research_reports"] = workspace_notes(
+    groups["research_reports"] = group_report_versions(workspace_notes(
         workspace, [
             "行业研究/*/输出文档/**/*.md",
             "项目/*/输出文档/03_研究与分析/**/*.md",
             "项目/归档/*/输出文档/03_研究与分析/**/*.md",
-        ], "research_report")
+        ], "research_report"))
     groups["project_judgments"] = workspace_notes(workspace, [
         "项目/*/输出文档/*项目判断与todo.md", "项目/归档/*/输出文档/*项目判断与todo.md",
         "基金/输出文档/**/*.md", "基金/*/输出文档/**/*.md"], "project_judgment")
     groups["radar_candidates"] = radar_candidates(workspace)
+    groups["sourcing_reviews"] = sourcing_reviews(workspace)
     phrases = [p.lower() for p in re.findall(r"[a-zA-Z0-9_.+-]{2,}|[\u3400-\u9fff]{2,}", query) if p.lower() not in STOP_WORDS]
-    entity_terms = {term for term in phrases for r in groups["projects"]
-                    for name in [r.get("name", ""), *r.get("aliases", [])]
-                    if str(name).lower().startswith(term)}
+    entity_terms = {name.lower() for group in ("projects", "project_judgments", "radar_candidates", "sourcing_reviews")
+                    for record in groups[group] for name in identity_names(record)
+                    if mentions(query, name)}
     for records in groups.values():
         for record in records:
             record["_entity_terms"] = list(entity_terms)
+            record["_query_phrases"] = phrases
     corpus = [tokens(r.get("_body", "")) for records in groups.values() for r in records]
     weights = {t: math.log(1 + len(corpus) / (1 + sum(t in d for d in corpus))) for t in query_tokens}
     selected = {group: select(records, query_tokens, limit, weights) for group, records in groups.items()}

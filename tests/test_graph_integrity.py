@@ -32,6 +32,17 @@ class GraphTests(unittest.TestCase):
         self.assertEqual(content_date(parse_markdown(p)), "2026-01-02")
         self.assertEqual(content_date({"fields": {}, "text": "截至2026-01-03，更新；计划2027-01-01发布"}), "2026-01-03")
 
+    def test_explicit_header_date_wins_over_historical_operating_date(self):
+        for header in ("更新时间：2026-01-03", "更新日期：2026-01-03。初次分析。",
+                       "- 更新与研究截止：2026-01-03；投后复盘。", "整理日期：2026-01-03｜经营资料截至：2025-06-30"):
+            with self.subTest(header=header):
+                p = self.write("dated.md", f"# Current view\n\n{header}\n\n## History\n截至2025-12-16，历史收入。\n计划2027-01-01交付。")
+                self.assertEqual(content_date(parse_markdown(p)), "2026-01-03")
+
+    def test_publication_header_does_not_refresh_on_note_edit(self):
+        p = self.write("dated.md", "# Source\n- 类型：公开对谈；首次公开2026-01-02，整理2026-01-03。\n\n## Analysis\nHistorical mechanism")
+        self.assertEqual(content_date(parse_markdown(p)), "2026-01-02")
+
     def test_links_and_cross_kind_relations(self):
         self.write("Memory Graph/03_技术主题/Cache.md", "# 技术主题｜Cache\n- 内容截至: 2026-01-01\n\n## 当前理解\nCache economics\n\n## 关联\n- [Ada](../06_人物卡片/Ada.md)：技术贡献。\n")
         self.write("Memory Graph/06_人物卡片/Ada.md", "# 人物卡片｜Ada\n\n## 一句话\nCache scientist")
