@@ -174,7 +174,7 @@ def search_outputs(workspace, query, *, scopes=("projects", "funds"), aliases=No
             score += 25 * name_hits + 12 * location_hits + 15 * is_formal
             if label:
                 score += 18
-            if (is_formal and any(p in identity and PURPOSE.search(p) for p in parts)
+            if (any(p in identity and PURPOSE.search(p) for p in parts)
                     and any(p in owner_names for p in parts)):
                 score += 100
             if re.search(r"清[单單]|使用[说說]明", best.stem) and any(p in package_name.casefold() for p in parts):
