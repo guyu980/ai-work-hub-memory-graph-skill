@@ -39,7 +39,9 @@ Query the actual decision: company/alias, mechanism, buyer, budget or price deno
 python3 <skill_dir>/scripts/retrieve_memory.py --workspace-root "<root>" --query "<specific question>" --limit 8
 ```
 
-The helper searches fresh Graph text, core source notes, formal research, running judgments, structured GitHub radar candidates and existing cross-task sourcing reviews. It uses full entity names/aliases rather than generic-word prefixes. Similar research versions can share a result slot; `other_versions` preserves access to dated snapshots.
+The helper searches fresh Graph text, core source notes, formal research, running judgments, structured GitHub radar candidates and existing cross-task sourcing reviews. For a specific deliverable, include the owner, intended use, audience or file format. It includes project question lists, meeting notes, analysis and delivery packages, plus fund outputs, by filename, package name, owner and available text. `project_outputs`, `deliverables` and `fund_workpapers` link to the originals; `other_formats` lists sibling formats. A package date describes the edition, a reporting period describes the covered quarter, and only a guide's explicit current link or section supplies `current_label`. Read the selected file before relying on its contents. If `unmatched_terms` is present and nonempty, only part of the query matched.
+
+It uses full entity names/aliases rather than generic-word prefixes. Similar research versions can share a result slot; `other_versions` preserves access to dated snapshots.
 
 Check `updated_at` and `date_basis`: formal project-state date, explicit content metadata and filename fallbacks do not mean the same thing. A file reorganization does not refresh the facts. Results/one-hop links are relevance, not corroboration; lexical misses require a better query or targeted full-text search, not a claim of absence. Do not rebuild or audit the workspace for a read-only query.
 

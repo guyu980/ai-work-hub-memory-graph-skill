@@ -43,6 +43,54 @@ class RetrievalTests(unittest.TestCase):
         self.assertEqual(len(result["research_reports"]), 2)
         self.assertEqual(result["knowledge_sources"][0]["source_scope"], "workspace_root")
 
+    def test_current_edition_audience_and_requested_format(self):
+        base = "基金/示例基金/输出文档/04_正式交付/"
+        current = base + "2026-01-04_策略/示例基金投资策略"
+        old = base + "2026-01-02_Taylor讨论稿/示例基金投资策略"
+        later = base + "2026-01-06_内部试排/示例基金投资策略"
+        for path in (current, old, later):
+            self.write(path + ".md", "# 示例基金投资策略\n业务假设")
+            self.write(path + ".pptx", "fixture")
+        self.write("基金/资料索引.md", "## 当前文件\n[现行策略正文](" + current[3:] + ".md)\n")
+        result = self.query("示例基金投资策略", 5)["deliverables"]
+        self.assertEqual(result[0]["source_path"], current + ".md")
+        self.assertEqual(result[0]["updated_at"], "2026-01-04")
+        self.assertEqual(result[0]["date_basis"], "package")
+        self.assertIn(current + ".pptx", result[0]["other_formats"])
+        historical = self.query("示例基金策略 Taylor PPT")["deliverables"]
+        self.assertEqual(historical[0]["source_path"], old + ".pptx")
+
+    def test_quarterly_word_and_alternate_project_format(self):
+        self.write("基金/示例基金/输出文档/04_正式交付/示例二零二六年第三季度管理报告.DOCX", "fixture")
+        result = self.query("示例基金 q3 季报 Word")["deliverables"][0]
+        self.assertEqual(result["reporting_period"], "2026-Q3")
+        self.assertEqual(result["date_basis"], "unknown")
+        for compact in ("示例基金第三季度管理报告", "示例三季报", "示例三季报Word"):
+            first = self.query(compact)["deliverables"][0]
+            self.assertEqual(first["source_path"], result["source_path"])
+        base = "项目/归档/Orchid/输出文档/04_正式交付/2026-02-04_review/Investment report"
+        self.write(base + ".md", "# Investment report\nSpecific advisor on software.")
+        self.write(base + ".pptx", "fixture")
+        result = self.query("Orchid report advisor ppt")["deliverables"]
+        self.assertEqual(result[0]["source_path"], base + ".pptx")
+        self.assertEqual(result[0]["other_formats"], [base + ".md"])
+
+    def test_project_meeting_questions_by_owner_and_filename(self):
+        path = "项目/虚构科技/输出文档/01_问题清单/2026-02-17_会前Demo重点问题.md"
+        self.write(path, "# 虚构科技｜会前 Demo 重点问题")
+        output = self.query("虚构科技 会前Demo重点问题")["project_outputs"][0]
+        self.assertEqual(output["source_path"], path)
+        self.assertEqual(output["updated_at"], "2026-02-17")
+
+    def test_partial_output_requires_named_owner_and_signals_missing_terms(self):
+        base = "基金/示例基金/输出文档/04_正式交付/2026-02-04_协议材料/方案.txt"
+        self.write(base, "拟议方案")
+        result = self.query("示例基金 协议材料 Atlas")["deliverables"]
+        self.assertEqual(result[0]["unmatched_terms"], ["atlas"])
+        self.assertEqual(self.query("协议材料 Atlas")["deliverables"], [])
+        self.write("基金/示例基金/输出文档/04_正式交付/工作区/Atlas协议.md", "# Wrong")
+        self.assertEqual(self.query("Atlas")["deliverables"], [])
+
     def test_one_hop_does_not_recursively_expand(self):
         records = [{"name": name, "project_id": "project:" + name,
                     "source_path": "01_项目卡片/" + name + ".md"} for name in ("Quartz", "Cedar", "Birch")]

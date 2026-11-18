@@ -14,6 +14,7 @@ from typing import Any
 
 from memory_graph_lib import content_date, graph_lock, parse_markdown, read_jsonl, write_json_atomic
 from rebuild_indexes import stable_id
+from output_catalog import search_outputs
 
 
 GROUPS = {
@@ -341,7 +342,7 @@ def retrieve(workspace: Path, memory_root: Path, query: str, limit: int) -> dict
     query_tokens = tokens(query)
     if not query_tokens:
         return {"schema_version": 2, "query": query, **{g: [] for g in GROUPS},
-                "knowledge_sources": [], "research_reports": [], "project_judgments": [], "radar_candidates": [], "sourcing_reviews": [], "related": []}
+                "knowledge_sources": [], "research_reports": [], "project_judgments": [], "radar_candidates": [], "sourcing_reviews": [], "deliverables": [], "fund_workpapers": [], "project_outputs": [], "related": []}
     groups = graph_records(memory_root)
     groups["knowledge_sources"] = workspace_notes(
         workspace, ["知识来源/**/*核心整理.md"], "knowledge_source")
@@ -352,8 +353,7 @@ def retrieve(workspace: Path, memory_root: Path, query: str, limit: int) -> dict
             "项目/归档/*/输出文档/03_研究与分析/**/*.md",
         ], "research_report"))
     groups["project_judgments"] = workspace_notes(workspace, [
-        "项目/*/输出文档/*项目判断与todo.md", "项目/归档/*/输出文档/*项目判断与todo.md",
-        "基金/输出文档/**/*.md", "基金/*/输出文档/**/*.md"], "project_judgment")
+        "项目/*/输出文档/*项目判断与todo.md", "项目/归档/*/输出文档/*项目判断与todo.md"], "project_judgment")
     groups["radar_candidates"] = radar_candidates(workspace)
     groups["sourcing_reviews"] = sourcing_reviews(workspace)
     phrases = [p.lower() for p in re.findall(r"[a-zA-Z0-9_.+-]{2,}|[\u3400-\u9fff]{2,}", query) if p.lower() not in STOP_WORDS]
@@ -367,9 +367,29 @@ def retrieve(workspace: Path, memory_root: Path, query: str, limit: int) -> dict
     corpus = [tokens(r.get("_body", "")) for records in groups.values() for r in records]
     weights = {t: math.log(1 + len(corpus) / (1 + sum(t in d for d in corpus))) for t in query_tokens}
     selected = {group: select(records, query_tokens, limit, weights) for group, records in groups.items()}
-    ranked = sorted([(item["retrieval_score"], group, i) for group, records in selected.items()
-                     for i, item in enumerate(records)], reverse=True)[:limit]
-    keep = {(group, i) for _, group, i in ranked}
+    aliases = {r["name"]: r.get("aliases", []) for r in groups["projects"] if r.get("name")}
+    outputs = search_outputs(workspace, query, aliases=aliases)
+    # Research Markdown already participates in editorial version grouping. Keep
+    # its established result category and retain separate Office/other formats.
+    research_paths = {record["source_path"] for record in groups["research_reports"]}
+    outputs = [r for r in outputs if r["source_path"] not in research_paths]
+    for group, kind in (("deliverables", "deliverable"), ("fund_workpapers", "fund_workpaper"),
+                        ("project_outputs", "project_output")):
+        groups[group] = []
+        selected[group] = [r for r in outputs if r["type"] == kind][:limit]
+    ranked = sorted(((item["retrieval_score"], item.get("updated_at", ""), group, -i)
+                     for group, records in selected.items() for i, item in enumerate(records)), reverse=True)
+    keep = set()
+    seen = set()
+    for _, _, group, neg_i in ranked:
+        item = selected[group][-neg_i]
+        identity = (item.get("source_scope"), item["source_path"], item.get("entry_key"))
+        if identity in seen:
+            continue
+        seen.add(identity)
+        keep.add((group, -neg_i))
+        if len(keep) == limit:
+            break
     selected = {group: [r for i, r in enumerate(records) if (group, i) in keep] for group, records in selected.items()}
     selected["related"] = one_hop(groups, selected, read_jsonl(
         memory_root / "00_索引" / "关系索引.jsonl"), min(limit, 5), query_tokens)
