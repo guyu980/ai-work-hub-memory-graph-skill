@@ -65,7 +65,7 @@ class RetrievalTests(unittest.TestCase):
         result = self.query("示例基金 q3 季报 Word")["deliverables"][0]
         self.assertEqual(result["reporting_period"], "2026-Q3")
         self.assertEqual(result["date_basis"], "unknown")
-        for compact in ("示例基金第三季度管理报告", "示例三季报"):
+        for compact in ("示例基金第三季度管理报告", "示例三季报", "示例三季报Word"):
             first = self.query(compact)["deliverables"][0]
             self.assertEqual(first["source_path"], result["source_path"])
         base = "项目/归档/Orchid/输出文档/04_正式交付/2026-02-04_review/Investment report"

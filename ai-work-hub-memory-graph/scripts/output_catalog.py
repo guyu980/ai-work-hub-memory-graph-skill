@@ -104,6 +104,37 @@ def output_groups(workspace, scopes):
                         yield category, owner, paths
 
 
+def owner_terms(terms, names):
+    """Split a Chinese owner immediately followed by a quarter or document purpose."""
+    parts = []
+    for term in terms:
+        name = next((n for n in names if n in term), "")
+        if not name:
+            parts.append(term.strip("的") or term)
+            continue
+        before, _, after = term.partition(name)
+        parts.append(name)
+        for rest in (before, after):
+            parts.extend(re.findall(r"[a-z0-9.+-]+|[\u3400-\u9fff]+", rest.strip(" 的")))
+    return parts
+
+
+def output_date(package, name, body):
+    for part in reversed(package):
+        if value := file_date(part):
+            return value, "package"
+    if value := file_date(name):
+        return value, "filename"
+    for line in body.splitlines()[:8]:
+        header = re.match(r"^\s*(?:(?:日期|报告日期|编制日期)\s*[：:]\s*)?(20\d\d[-年]\d{1,2}[-月]\d{1,2})", line)
+        if header:
+            try:
+                return date(*map(int, re.findall(r"\d+", header[1]))).isoformat(), "document"
+            except ValueError:
+                continue
+    return "", "unknown"
+
+
 def search_outputs(workspace, query, *, scopes=("projects", "funds"), aliases=None, allowed=None):
     """Return grouped output originals and sibling formats. Office files are searched by metadata."""
     workspace = workspace.resolve()
@@ -112,7 +143,8 @@ def search_outputs(workspace, query, *, scopes=("projects", "funds"), aliases=No
     browse = query is None
     query = normalized(query or "")
     requested = {ext for w in re.findall(r"[a-z0-9]+", query) for ext in FORM_REQUESTS.get(w, ())}
-    words = re.sub(r"最新(?:版)?|现行|当前|请找|查找|帮我找|发给|的版本|current\b|latest\b", " ", query).split()
+    without_format = re.sub(r"[a-z0-9]+", lambda m: " " if m[0] in FORM_REQUESTS else m[0], query)
+    words = re.sub(r"最新(?:版)?|现行|当前|请找|查找|帮我找|发给|的版本|current\b|latest\b", " ", without_format).split()
     terms = [w.strip("，。？?、") for w in words if w not in FORM_REQUESTS and w not in {"的", "版", "找"}]
     if not browse and not terms and not requested:
         return []
@@ -144,17 +176,8 @@ def search_outputs(workspace, query, *, scopes=("projects", "funds"), aliases=No
         aliases_here = [owner, *aliases.get(owner, [])]
         if category == "funds" and owner.endswith("基金") and len(owner[:-2]) >= 2:
             aliases_here.append(owner[:-2])
-        aliases_here = sorted(aliases_here, key=len, reverse=True)
-        parts = []
-        for term in terms:
-            name = next((normalized(n) for n in aliases_here if n and normalized(n) in term), "")
-            if name:
-                before, _, after = term.partition(name)
-                parts.append(name)
-                for rest in (before, after):
-                    parts.extend(re.findall(r"[a-z0-9.+-]+|[\u3400-\u9fff]+", rest.strip(" 的")))
-            else:
-                parts.append(term.strip("的") or term)
+        aliases_here = sorted((normalized(n) for n in aliases_here if n), key=len, reverse=True)
+        parts = owner_terms(terms, aliases_here)
         searchable = normalized(body)
         missing = [p for p in parts if p not in location and p not in identity and p not in searchable]
         if missing:
@@ -181,21 +204,7 @@ def search_outputs(workspace, query, *, scopes=("projects", "funds"), aliases=No
                 score += 20
         if len(parts) > 1 and all(p in owner_names or p in identity for p in parts) and requested_artifact:
             score += 35
-        package_date = next((d for item in reversed(package) if (d := file_date(item))), "")
-        version_date = package_date or file_date(best.name)
-        date_basis = "package" if package_date else "filename" if version_date else "unknown"
-        # Bare report dates appear on the title page more often than in filenames.
-        if not version_date:
-            for line in body.splitlines()[:8]:
-                header = re.match(r"^\s*(?:(?:日期|报告日期|编制日期)\s*[：:]\s*)?(20\d\d[-年]\d{1,2}[-月]\d{1,2})", line)
-                if header:
-                    match = re.findall(r"\d+", header[1])
-                    try:
-                        version_date = date(*map(int, match)).isoformat()
-                        date_basis = "document"
-                        break
-                    except ValueError:
-                        continue
+        version_date, date_basis = output_date(package, best.name, body)
         body_lines = body.splitlines()
         snippet = max((line for line in body_lines if line.strip() and not line.startswith("#")),
                       key=lambda line: sum(p in normalized(line) for p in parts), default="")
